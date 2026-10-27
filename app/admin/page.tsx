@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { SiteFooter, SiteHeader, headerButtonClass } from "@/components/site-header";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -53,6 +54,8 @@ export default function AdminPage({ searchParams }: PageProps<"/admin">) {
 
 async function Report({ searchParams }: { searchParams: PageProps<"/admin">["searchParams"] }) {
   if (!isSupabaseConfigured) redirect("/admin/login");
+  // Always render per request: the report reads live data and shows the current time.
+  await connection();
   const supabase = await createClient();
 
   // proxy.ts already redirects signed-out visitors; this is the real check.
