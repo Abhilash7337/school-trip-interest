@@ -2,7 +2,7 @@
 
 A small app where teachers register their school's interest in an educational trip, and staff review every submission in a protected admin report.
 
-**Live:** _added after deploy_ · **Stack:** Next.js 16 (App Router) · Supabase (Postgres + Auth) · Tailwind CSS 4 · zod · Vercel
+**Live:** https://school-trip-interest.vercel.app (admin: [/admin](https://school-trip-interest.vercel.app/admin)) · **Stack:** Next.js 16 (App Router) · Supabase (Postgres + Auth) · Tailwind CSS 4 · zod · Vercel
 
 ## What it does
 
