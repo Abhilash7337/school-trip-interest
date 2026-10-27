@@ -78,7 +78,11 @@ components/
   trip-details-dialog.tsx  itinerary dialog (native <dialog>)
   check-in-form.tsx      3-step form
   confirmation-pass.tsx  boarding-pass confirmation
+  destination-art.tsx    SVG skylines for each destination
+  site-header.tsx        shared header/footer used on every page
+  theme-toggle.tsx       light/dark switch (saved in localStorage)
 lib/
+  data.ts                getTrips() (request-scoped, de-duplicated with cache())
   validation.ts          shared zod schema + phone normaliser
   supabase/server.ts     cookie-based Supabase client
   supabase/proxy.ts      session refresh + /admin redirect
