@@ -1,0 +1,1357 @@
+<title>School Trip Design Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=Baloo+2:wght@500;700;800&family=Chakra+Petch:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Nunito:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Unbounded:wght@400;600;800&display=swap">
+<style>
+/* Layout: shell (tabs + controls) wraps a container-query "stage" that renders one live concept at a time, followed by notes and a comparison. */
+:root{
+  --bg:#F3F5F7; --surface:#FFFFFF; --fg:#141A22; --mute:#5C6673; --line:#DCE1E7;
+  --accent:#0E7C74; --accent-soft:#E1F2EF; --frame:#1A1F27;
+  --sans:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0D1015; --surface:#151A21; --fg:#E6EAF0; --mute:#97A1AE; --line:#29313B;
+  --accent:#3CC2B4; --accent-soft:#163532; --frame:#000000; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0D1015; --surface:#151A21; --fg:#E6EAF0; --mute:#97A1AE; --line:#29313B;
+  --accent:#3CC2B4; --accent-soft:#163532; --frame:#000000; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.5}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.shell{max-width:1320px;margin:0 auto;display:grid;gap:22px;padding-block:28px 72px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.sh-eyebrow{margin:0;font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;font-weight:700;color:var(--accent)}
+.sh-head h1{font-size:clamp(1.6rem,3.2vw,2.5rem);line-height:1.12;letter-spacing:-.02em;margin:6px 0 10px;text-wrap:balance}
+.sh-head p.lede{max-width:70ch;color:var(--mute);margin:0}
+.sh-tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.sh-tab{position:relative;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px 12px;cursor:pointer;display:grid;gap:3px;transition:border-color .15s,transform .15s}
+.sh-tab:hover{transform:translateY(-1px)}
+.sh-tab b{font-size:1rem;font-weight:800}
+.sh-tab span{font-size:.8rem;color:var(--mute)}
+.sh-tab .dots{display:flex;gap:4px;margin-top:6px}
+.sh-tab .dots i{width:14px;height:14px;border-radius:50%;border:1px solid var(--line)}
+.sh-tab[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.sh-badge{position:absolute;top:10px;right:10px;font-size:.62rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:var(--accent-soft);color:var(--accent);padding:2px 7px;border-radius:999px}
+.sh-bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.sh-bar .hint{color:var(--mute);font-size:.82rem;margin-left:auto}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--surface)}
+.seg button{border:0;background:transparent;color:var(--mute);font-weight:700;font-size:.85rem;padding:6px 14px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.stage{container:stage/inline-size;border:1px solid var(--line);border-radius:16px;overflow:clip;background:var(--surface);position:relative}
+.stage.is-phone{max-width:390px;margin-inline:auto;height:780px;overflow-y:auto;border:10px solid var(--frame);border-radius:44px;scrollbar-width:thin}
+.sh-notes{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px}
+.sh-notes h2{margin:4px 0 6px;font-size:1.6rem;letter-spacing:-.01em}
+.nt-mood{margin:0 0 16px;color:var(--mute);max-width:62ch}
+.nt-dl{display:grid;gap:12px;margin:0}
+.nt-dl div{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px}
+.nt-dl dt{font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);padding-top:2px}
+.nt-dl dd{margin:0}
+.nt-side h3{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--mute);margin:0 0 10px}
+.nt-sw{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin-bottom:18px}
+.nt-sw div{display:grid;gap:2px;font-size:.8rem}
+.nt-sw span{height:44px;border-radius:8px;border:1px solid var(--line)}
+.nt-sw code{font-family:var(--mono);color:var(--mute);font-size:.72rem}
+.nt-fonts{margin:0;display:grid;gap:6px;font-size:1.05rem}
+.nt-fonts small{color:var(--mute);font-family:var(--sans);font-size:.78rem}
+.sh-sec{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px;display:grid;gap:14px}
+.sh-sec h2{margin:0;font-size:1.35rem}
+.cmp-wrap{overflow-x:auto}
+.cmp{width:100%;border-collapse:collapse;min-width:640px;font-size:.9rem}
+.cmp th,.cmp td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left}
+.cmp th{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mute)}
+.cmp tr.is-rec td{background:var(--accent-soft)}
+.cmp .dots{letter-spacing:2px;color:var(--accent);font-size:.8rem;white-space:nowrap}
+.cmp .dots s{color:var(--line);text-decoration:none}
+.pick{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.pick p{margin:0 0 10px;max-width:64ch}
+.pick ul{margin:0;padding-left:18px;display:grid;gap:6px}
+@media (max-width: 760px){ .sh-notes,.pick{grid-template-columns:1fr} .nt-dl div{grid-template-columns:1fr;gap:2px} .sh-bar .hint{margin-left:0} }
+@media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition:none!important;scroll-behavior:auto!important} }
+
+/* ---------- shared bits used inside every concept ---------- */
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.tbl-wrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{text-align:left;padding:11px 14px;white-space:nowrap}
+.tbl .num{text-align:right}
+.th-sort{border:0;background:none;padding:0;cursor:pointer;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit}
+.concept{min-height:100%}
+
+/* =================== 1. CAMPUS =================== */
+.cp{--cp-bg:#F5F7F9;--cp-surface:#FFFFFF;--cp-ink:#0F1B2A;--cp-mute:#5A6878;--cp-line:#E1E6EC;--cp-primary:#0E7C74;--cp-on:#FFFFFF;--cp-soft:#E3F3F1;--cp-amber:#E8A317;--cp-err:#C2362F;--cp-sin:#0E7C74;--cp-jai:#C2563F;--cp-lhr:#2D4A8A;
+  background:var(--cp-bg);color:var(--cp-ink);font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-size:15px;min-height:100%}
+.cp[data-mode="dark"]{--cp-bg:#0C1218;--cp-surface:#121B24;--cp-ink:#E6EDF3;--cp-mute:#8B9AA9;--cp-line:#223140;--cp-primary:#2BB3A6;--cp-on:#06201D;--cp-soft:#11302D;--cp-amber:#F0B43A;--cp-err:#FF7B72;--cp-sin:#2BB3A6;--cp-jai:#E07A62;--cp-lhr:#6E8FD6;color-scheme:dark}
+.cp-in{max-width:1180px;margin:0 auto;padding-inline:28px}
+.cp-nav{border-bottom:1px solid var(--cp-line);background:var(--cp-surface)}
+.cp-nav-in{display:flex;align-items:center;gap:20px;height:64px}
+.cp-brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.02rem}
+.cp-mark{width:32px;height:32px;border-radius:9px;background:var(--cp-primary);color:var(--cp-on);display:grid;place-items:center;font-size:.8rem;font-weight:800}
+.cp-links{display:flex;gap:4px;margin-left:12px}
+.cp-links button,.cp-link{border:0;background:none;color:var(--cp-mute);font-weight:600;padding:8px 10px;border-radius:8px;cursor:pointer}
+.cp-links button:hover,.cp-link:hover{color:var(--cp-ink);background:var(--cp-bg)}
+.cp-nav-r{margin-left:auto;display:flex;gap:8px;align-items:center}
+.cp-icon{width:38px;height:38px;border-radius:10px;border:1px solid var(--cp-line);background:var(--cp-surface);display:grid;place-items:center;cursor:pointer;color:var(--cp-ink)}
+.cp-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:10px;padding:10px 16px;font-weight:700;font-size:.92rem;cursor:pointer;border:1px solid transparent;transition:background .15s,transform .1s}
+.cp-btn:active{transform:translateY(1px)}
+.cp-btn:disabled{opacity:.5;cursor:not-allowed}
+.cp-primary{background:var(--cp-primary);color:var(--cp-on)}
+.cp-primary:hover{filter:brightness(1.08)}
+.cp-outline{background:var(--cp-surface);border-color:var(--cp-line);color:var(--cp-ink)}
+.cp-outline:hover{border-color:var(--cp-primary)}
+.cp-ghost{background:transparent;color:var(--cp-ink);border-color:var(--cp-line)}
+.cp-hero{padding-block:52px 56px}
+.cp-hero-in{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:48px;align-items:start}
+.cp-pill{display:inline-flex;align-items:center;gap:8px;font-size:.8rem;font-weight:700;color:var(--cp-primary);background:var(--cp-soft);padding:6px 12px;border-radius:999px}
+.cp-pill i{width:7px;height:7px;border-radius:50%;background:var(--cp-primary);box-shadow:0 0 0 4px color-mix(in srgb,var(--cp-primary) 25%,transparent)}
+.cp-copy h1{font-size:clamp(2rem,4.4cqi,3.3rem);line-height:1.06;letter-spacing:-.03em;margin:18px 0 16px;text-wrap:balance;font-weight:800}
+.cp-copy>p{color:var(--cp-mute);font-size:1.05rem;max-width:52ch;margin:0}
+.cp-trust{list-style:none;padding:0;margin:30px 0 0;display:flex;flex-wrap:wrap;gap:28px}
+.cp-trust li{display:grid}
+.cp-trust b{font-size:1.5rem;letter-spacing:-.02em}
+.cp-trust span{color:var(--cp-mute);font-size:.85rem}
+.cp-card{background:var(--cp-surface);border:1px solid var(--cp-line);border-radius:16px}
+.cp-formcard{padding:26px;box-shadow:0 20px 40px -24px rgba(15,27,42,.25)}
+.cp-fh h2{margin:0;font-size:1.25rem}
+.cp-fh p{margin:4px 0 18px;color:var(--cp-mute);font-size:.9rem}
+.cp-fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px 14px}
+.cp .fld{display:grid;gap:6px;align-content:start;min-width:0}
+.cp .fld label{font-size:.82rem;font-weight:700}
+.cp .inp{width:100%;border:1px solid var(--cp-line);background:var(--cp-surface);color:var(--cp-ink);border-radius:10px;padding:10px 12px;font:inherit;font-size:.95rem;transition:border-color .15s,box-shadow .15s}
+.cp .inp:focus{outline:none;border-color:var(--cp-primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--cp-primary) 22%,transparent)}
+.cp .has-err .inp{border-color:var(--cp-err)}
+.cp .err{margin:0;color:var(--cp-err);font-size:.8rem;font-weight:600}
+.cp-live{margin:16px 0 14px;padding:10px 12px;border-radius:10px;background:var(--cp-bg);font-size:.86rem;color:var(--cp-mute);border:1px dashed var(--cp-line)}
+.cp-live b{color:var(--cp-ink)}
+.cp-submit{width:100%;padding:13px}
+.cp-ok{display:grid;gap:12px;justify-items:start}
+.cp-okic{width:48px;height:48px;border-radius:50%;background:var(--cp-soft);color:var(--cp-primary);display:grid;place-items:center}
+.cp-ok h2{margin:0;font-size:1.4rem}
+.cp-ok p{margin:0;color:var(--cp-mute)}
+.cp-ref{font-family:'IBM Plex Mono',monospace;font-size:.85rem;background:var(--cp-bg);padding:4px 8px;border-radius:6px;color:var(--cp-ink)}
+.cp-okbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.cp-trips{padding-block:20px 64px}
+.cp-sechead{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:8px;margin-bottom:22px}
+.cp-sechead h2{margin:0;font-size:1.6rem;letter-spacing:-.02em}
+.cp-sechead p{margin:0;color:var(--cp-mute)}
+.cp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.cp-trip{display:flex;flex-direction:column;overflow:hidden;transition:box-shadow .2s,transform .2s,border-color .2s}
+.cp-trip:hover{transform:translateY(-3px);box-shadow:0 16px 30px -20px rgba(15,27,42,.35)}
+.cp-trip.is-sel{border-color:var(--cp-primary);box-shadow:0 0 0 2px var(--cp-primary)}
+.cp-tband{height:96px;display:flex;justify-content:space-between;align-items:flex-start;padding:16px;color:#fff}
+.t-SIN .cp-tband{background:linear-gradient(135deg,var(--cp-sin),color-mix(in srgb,var(--cp-sin) 55%,#000))}
+.t-JAI .cp-tband{background:linear-gradient(135deg,var(--cp-jai),color-mix(in srgb,var(--cp-jai) 55%,#000))}
+.t-LHR .cp-tband{background:linear-gradient(135deg,var(--cp-lhr),color-mix(in srgb,var(--cp-lhr) 55%,#000))}
+.cp-ticon{width:46px;height:46px;display:block}
+.cp-chip{font-size:.75rem;font-weight:700;background:rgba(255,255,255,.18);padding:4px 10px;border-radius:999px;backdrop-filter:blur(4px)}
+.cp-tbody{padding:18px 18px 8px;display:grid;gap:8px;flex:1}
+.cp-tbody h3{margin:0;font-size:1.15rem}
+.cp-place{font-size:.82rem;color:var(--cp-mute);margin:0;font-weight:600}
+.cp-tbody>p{margin:0;font-size:.9rem;color:var(--cp-mute)}
+.cp-hl{list-style:none;padding:0;margin:6px 0 0;display:grid;gap:6px;font-size:.88rem}
+.cp-hl li{display:flex;gap:8px;align-items:center}
+.cp-hl svg{color:var(--cp-primary);flex:none}
+.cp-tfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 18px 18px;border-top:1px solid var(--cp-line);margin-top:10px}
+.cp-tfoot small{display:block;color:var(--cp-mute);font-size:.72rem}
+.cp-tfoot b{font-size:1.05rem}
+.cp-foot{border-top:1px solid var(--cp-line);padding-block:20px;color:var(--cp-mute);font-size:.82rem}
+/* campus admin */
+.cp-app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:720px}
+.cp-side{background:var(--cp-surface);border-right:1px solid var(--cp-line);padding:20px 14px;display:flex;flex-direction:column;gap:22px}
+.cp-snav{display:grid;gap:2px}
+.cp-snav span{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-radius:9px;color:var(--cp-mute);font-weight:600;font-size:.9rem}
+.cp-snav .is-on{background:var(--cp-soft);color:var(--cp-primary)}
+.cp-snav em{font-style:normal;font-size:.68rem;background:var(--cp-bg);padding:1px 6px;border-radius:6px}
+.cp-user{margin-top:auto;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;align-items:center;font-size:.82rem}
+.cp-user small{color:var(--cp-mute);display:block;overflow:hidden;text-overflow:ellipsis}
+.cp-user .cp-link{grid-column:1/-1;justify-self:start;padding:6px 8px;margin-top:6px}
+.cp-av{width:34px;height:34px;border-radius:50%;background:var(--cp-primary);color:var(--cp-on);display:grid;place-items:center;font-weight:800;font-size:.75rem}
+.cp-main{padding:26px 28px 40px;display:grid;gap:20px;align-content:start;min-width:0}
+.cp-mhead{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:end}
+.cp-mhead h1{margin:0;font-size:1.6rem;letter-spacing:-.02em}
+.cp-mhead p{margin:2px 0 0;color:var(--cp-mute);font-size:.9rem}
+.cp-mh-r{display:flex;gap:8px;flex-wrap:wrap}
+.cp-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) minmax(0,1.6fr);gap:14px}
+.cp-kpi{padding:16px 18px;display:grid;gap:4px;align-content:start}
+.cp-kpi small{color:var(--cp-mute);font-weight:600;font-size:.8rem}
+.cp-kpi b{font-size:1.8rem;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+.cp-kpi span{font-size:.78rem;color:var(--cp-mute)}
+.cp-bars{display:grid;gap:9px;margin-top:4px}
+.cp-bar{display:grid;grid-template-columns:120px minmax(0,1fr) 44px;gap:10px;align-items:center;font-size:.82rem}
+.cp-bar i{display:block;height:8px;border-radius:99px;background:var(--cp-bg);overflow:hidden}
+.cp-bar i u{display:block;height:100%;border-radius:99px;background:var(--c)}
+.cp-bar b{font-size:.85rem;text-align:right;font-variant-numeric:tabular-nums}
+.cp-tablecard{overflow:hidden}
+.cp-tools{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;padding:16px}
+.cp-seg{display:flex;flex-wrap:wrap;gap:6px}
+.cp-seg button{border:1px solid var(--cp-line);background:var(--cp-surface);border-radius:10px;padding:7px 12px;cursor:pointer;display:grid;text-align:left;gap:1px;font-weight:700;font-size:.85rem;color:var(--cp-ink)}
+.cp-seg button small{font-weight:600;color:var(--cp-mute);font-size:.72rem}
+.cp-seg button[aria-pressed="true"]{border-color:var(--cp-primary);background:var(--cp-soft);color:var(--cp-primary)}
+.cp-search{border:1px solid var(--cp-line);background:var(--cp-bg);color:var(--cp-ink);border-radius:10px;padding:9px 12px;font:inherit;min-width:0;width:260px;max-width:100%}
+.cp-sum{margin:0;padding:0 16px 12px;font-size:.84rem;color:var(--cp-mute)}
+.cp .tbl{font-size:.88rem}
+.cp .tbl th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--cp-mute);background:var(--cp-bg);border-block:1px solid var(--cp-line)}
+.cp .tbl td{border-bottom:1px solid var(--cp-line)}
+.cp .tbl tr:hover td{background:color-mix(in srgb,var(--cp-soft) 50%,transparent)}
+.cp .tbl tr.is-new td{background:var(--cp-soft)}
+.cp .tag{font-size:.75rem;font-weight:700;padding:3px 8px;border-radius:6px;background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--c)}
+.cp .new{font-size:.65rem;font-weight:800;color:var(--cp-on);background:var(--cp-primary);padding:1px 6px;border-radius:5px;margin-left:6px}
+.cp .empty{padding:40px 16px;text-align:center;color:var(--cp-mute)}
+.cp-login{min-height:620px;display:grid;place-items:center;padding:40px 16px}
+.cp .lg{width:min(400px,100%);padding:28px;display:grid;gap:14px}
+.lg h2{margin:0}
+.lg-eyebrow{margin:0;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;opacity:.7}
+.lg-sub,.lg-demo{margin:0;font-size:.85rem;opacity:.75}
+.lg-back{border:0;background:none;padding:0;cursor:pointer;font-size:.85rem;text-decoration:underline;justify-self:start;opacity:.8}
+@container stage (max-width: 900px){
+  .cp-hero-in{grid-template-columns:1fr;gap:32px}
+  .cp-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .cp-kpis .cp-wide{grid-column:1/-1}
+}
+@container stage (max-width: 760px){
+  .cp-app{grid-template-columns:1fr}
+  .cp-side{flex-direction:row;flex-wrap:wrap;align-items:center;border-right:0;border-bottom:1px solid var(--cp-line);padding:12px 16px;gap:10px}
+  .cp-snav{display:flex}
+  .cp-snav span:not(.is-on){display:none}
+  .cp-user{margin:0 0 0 auto;display:flex}
+  .cp-user .cp-av,.cp-user div{display:none}
+  .cp-user .cp-link{margin:0}
+  .cp-main{padding:18px 16px 32px}
+}
+@container stage (max-width: 560px){
+  .cp-in{padding-inline:16px}
+  .cp-links{display:none}
+  .cp-hero{padding-block:28px 36px}
+  .cp-fgrid{grid-template-columns:1fr}
+  .cp-formcard{padding:18px}
+  .cp-kpis{grid-template-columns:1fr 1fr}
+  .cp-bar{grid-template-columns:96px minmax(0,1fr) 36px}
+  .cp-search{width:100%}
+}
+
+/* =================== 2. ORBIT (futuristic) =================== */
+.ob{--ob-void:#04060D;--ob-glass:rgba(120,160,255,.07);--ob-edge:rgba(140,200,255,.2);--ob-cyan:#5CF2FF;--ob-mag:#FF5BD6;--ob-ink:#DDE7FF;--ob-mute:#8592B8;--ob-err:#FF7A90;
+  position:relative;background:radial-gradient(1200px 600px at 70% -10%,rgba(92,242,255,.12),transparent 60%),radial-gradient(900px 500px at 0% 110%,rgba(255,91,214,.12),transparent 60%),var(--ob-void);
+  color:var(--ob-ink);font-family:'Chakra Petch',system-ui,sans-serif;min-height:100%;overflow:clip;color-scheme:dark}
+.ob-stars{position:absolute;inset:0;pointer-events:none}
+.ob-in{position:relative;max-width:1240px;margin:0 auto;padding:22px 28px 48px;display:grid;gap:26px}
+.ob-top{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.ob-logo{display:flex;align-items:center;gap:10px;font-family:'Unbounded',sans-serif;font-weight:800;letter-spacing:.08em;font-size:.95rem}
+.ob-ring{width:22px;height:22px;border-radius:50%;border:2px solid var(--ob-cyan);box-shadow:0 0 12px var(--ob-cyan),inset 0 0 8px var(--ob-cyan);position:relative}
+.ob-ring::after{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--ob-mag);box-shadow:0 0 10px var(--ob-mag)}
+.ob-stat{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.12em;color:var(--ob-mute);display:flex;align-items:center;gap:8px}
+.ob-stat i{width:8px;height:8px;border-radius:50%;background:#3DFFA8;box-shadow:0 0 10px #3DFFA8;animation:obPulse 1.6s infinite}
+@keyframes obPulse{50%{opacity:.3}}
+.ob-ghost{margin-left:auto;border:1px solid var(--ob-edge);background:var(--ob-glass);color:var(--ob-ink);border-radius:999px;padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.06em;cursor:pointer;backdrop-filter:blur(8px)}
+.ob-ghost:hover{border-color:var(--ob-cyan);box-shadow:0 0 18px rgba(92,242,255,.35)}
+.ob-label{margin:0;font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ob-cyan)}
+.ob-title h1{font-family:'Unbounded',sans-serif;font-weight:800;font-size:clamp(1.9rem,5cqi,3.6rem);line-height:1.02;letter-spacing:-.02em;margin:10px 0 0;text-wrap:balance}
+.ob-title h1 span{background:linear-gradient(90deg,var(--ob-cyan),var(--ob-mag));-webkit-background-clip:text;background-clip:text;color:transparent}
+.ob-grid{display:grid;grid-template-columns:260px minmax(0,1fr) 360px;gap:22px;align-items:start}
+.ob-missions{display:grid;gap:12px;perspective:800px}
+.ob-m{--rx:0deg;--ry:0deg;text-align:left;display:grid;gap:4px;padding:16px;border-radius:16px;border:1px solid var(--ob-edge);background:var(--ob-glass);color:var(--ob-ink);cursor:pointer;backdrop-filter:blur(10px);transform:rotateX(var(--rx)) rotateY(var(--ry));transition:transform .12s,border-color .2s,box-shadow .2s;position:relative;overflow:hidden}
+.ob-m::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(92,242,255,.12),transparent 70%);transform:translateX(-100%);transition:transform .6s}
+.ob-m:hover::before{transform:translateX(100%)}
+.ob-m.is-on{border-color:var(--ob-cyan);box-shadow:0 0 0 1px var(--ob-cyan),0 0 28px rgba(92,242,255,.3)}
+.ob-code{font-family:'Unbounded',sans-serif;font-weight:800;font-size:1.6rem;letter-spacing:.04em}
+.ob-m.is-on .ob-code{color:var(--ob-cyan);text-shadow:0 0 14px rgba(92,242,255,.6)}
+.ob-mt{font-weight:600}
+.ob-coord,.ob-dist{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--ob-mute)}
+.ob-core{display:grid;gap:20px;justify-items:center;text-align:center}
+.ob-orbit{position:relative;width:min(300px,100%);aspect-ratio:1;max-width:100%}
+.ob-r{position:absolute;border-radius:50%;border:1px solid var(--ob-edge)}
+.ob-r.r1{inset:0;border-style:dashed;animation:obSpin 40s linear infinite}
+.ob-r.r2{inset:12%;animation:obSpin 14s linear infinite}
+.ob-r.r3{inset:24%;animation:obSpin 9s linear infinite reverse;border-color:rgba(255,91,214,.35)}
+.ob-r i{position:absolute;top:-5px;left:50%;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--ob-cyan);box-shadow:0 0 14px var(--ob-cyan)}
+.ob-r.r3 i{background:var(--ob-mag);box-shadow:0 0 14px var(--ob-mag)}
+@keyframes obSpin{to{transform:rotate(360deg)}}
+.ob-planet{position:absolute;inset:34%;border-radius:50%;display:grid;place-items:center;color:#fff;box-shadow:0 0 50px rgba(92,242,255,.35),inset -14px -14px 30px rgba(0,0,0,.45)}
+.ob-planet svg{width:46%;height:46%}
+.ob-planet.t-SIN{background:radial-gradient(circle at 30% 30%,#7CFFE9,#0A8F86 60%,#04332F)}
+.ob-planet.t-JAI{background:radial-gradient(circle at 30% 30%,#FFB4D9,#C2387F 60%,#3A0A24)}
+.ob-planet.t-LHR{background:radial-gradient(circle at 30% 30%,#A9B9FF,#3B4FD6 60%,#0B1240)}
+.ob-info{display:grid;gap:10px;justify-items:center}
+.ob-info h2{margin:0;font-family:'Unbounded',sans-serif;font-weight:600;font-size:1.4rem}
+.ob-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.ob-chips span{font-family:'JetBrains Mono',monospace;font-size:.72rem;padding:5px 10px;border:1px solid var(--ob-edge);border-radius:999px;background:var(--ob-glass)}
+.ob-hl{list-style:none;padding:0;margin:0;display:grid;gap:4px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--ob-mute);text-align:left}
+.ob-hl li::before{content:"> ";color:var(--ob-mag)}
+.ob-panel{border-radius:20px;border:1px solid var(--ob-edge);background:linear-gradient(160deg,rgba(92,242,255,.08),rgba(255,91,214,.06));backdrop-filter:blur(16px);padding:22px;position:relative;box-shadow:0 30px 60px -30px rgba(0,0,0,.8)}
+.ob-panel::before{content:"";position:absolute;inset:-1px;border-radius:20px;padding:1px;background:linear-gradient(140deg,var(--ob-cyan),transparent 40%,transparent 60%,var(--ob-mag));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.ob-panel h3{margin:6px 0 16px;font-family:'Unbounded',sans-serif;font-weight:600;font-size:1.1rem}
+.ob-form{display:grid;gap:12px}
+.ob .fld{display:grid;gap:5px;min-width:0}
+.ob .fld label{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ob-mute)}
+.ob .inp{width:100%;background:rgba(4,6,13,.6);border:1px solid var(--ob-edge);color:var(--ob-ink);border-radius:10px;padding:10px 12px;font:inherit;font-size:.95rem;transition:border-color .2s,box-shadow .2s}
+.ob .inp:focus{outline:none;border-color:var(--ob-cyan);box-shadow:0 0 0 3px rgba(92,242,255,.18),0 0 18px rgba(92,242,255,.25)}
+.ob select.inp option{background:#0B1020;color:var(--ob-ink)}
+.ob .has-err .inp{border-color:var(--ob-err);box-shadow:0 0 14px rgba(255,122,144,.25)}
+.ob .err{margin:0;font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--ob-err)}
+.ob-row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ob-btn{margin-top:4px;border:0;border-radius:12px;padding:13px;font-family:'Unbounded',sans-serif;font-weight:600;font-size:.85rem;letter-spacing:.04em;color:#04060D;background:linear-gradient(90deg,var(--ob-cyan),var(--ob-mag));cursor:pointer;box-shadow:0 0 24px rgba(92,242,255,.35);transition:box-shadow .2s,transform .1s}
+.ob-btn:hover{box-shadow:0 0 40px rgba(255,91,214,.5)}
+.ob-btn:active{transform:scale(.99)}
+.ob-btn:disabled{opacity:.6}
+.ob-ok{display:grid;gap:12px;justify-items:center;text-align:center;padding-block:10px}
+.ob-pulse{width:84px;height:84px;border-radius:50%;border:2px solid var(--ob-cyan);display:grid;place-items:center;color:var(--ob-cyan);box-shadow:0 0 30px rgba(92,242,255,.45);animation:obRing 2s infinite}
+@keyframes obRing{0%{box-shadow:0 0 0 0 rgba(92,242,255,.5)}100%{box-shadow:0 0 0 26px rgba(92,242,255,0)}}
+.ob-ok h3{margin:0}
+.ob-ok p{margin:0;color:var(--ob-mute);font-size:.9rem}
+.ob-ok code{font-family:'JetBrains Mono',monospace;color:var(--ob-cyan)}
+/* orbit admin */
+.ob-gauges{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) minmax(0,1.2fr);gap:16px}
+.ob-gcard{border:1px solid var(--ob-edge);background:var(--ob-glass);border-radius:18px;padding:18px;display:grid;gap:12px;justify-items:center;text-align:center;backdrop-filter:blur(10px)}
+.ob-gauge{--p:0;width:130px;aspect-ratio:1;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p)*1%),rgba(255,255,255,.07) 0);display:grid;place-items:center;filter:drop-shadow(0 0 10px color-mix(in srgb,var(--c) 50%,transparent))}
+.ob-gauge>div{width:76%;aspect-ratio:1;border-radius:50%;background:var(--ob-void);display:grid;place-content:center}
+.ob-gauge b{font-family:'Unbounded',sans-serif;font-size:1.5rem}
+.ob-gauge small{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--ob-mute);letter-spacing:.1em}
+.ob-gcard h4{margin:0;font-weight:600}
+.ob-gcard p{margin:0;font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--ob-mute)}
+.ob-feed{border:1px solid var(--ob-edge);background:var(--ob-glass);border-radius:18px;padding:16px;display:grid;gap:10px;align-content:start;min-width:0}
+.ob-feed ul{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.ob-feed li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;font-size:.82rem}
+.ob-feed li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ob-feed li i{width:6px;height:6px;border-radius:50%;background:var(--ob-cyan);box-shadow:0 0 8px var(--ob-cyan)}
+.ob-feed li em{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--ob-mute)}
+.ob-chipsrow{display:flex;flex-wrap:wrap;gap:8px}
+.ob-chipsrow button{border:1px solid var(--ob-edge);background:var(--ob-glass);color:var(--ob-ink);border-radius:999px;padding:7px 14px;font-family:'JetBrains Mono',monospace;font-size:.74rem;cursor:pointer}
+.ob-chipsrow button[aria-pressed="true"]{border-color:var(--ob-cyan);color:var(--ob-cyan);box-shadow:0 0 16px rgba(92,242,255,.3)}
+.ob-tcard{border:1px solid var(--ob-edge);border-radius:18px;background:rgba(4,6,13,.55);overflow:hidden;backdrop-filter:blur(10px)}
+.ob-sum{margin:0;padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:.74rem;color:var(--ob-mute);border-bottom:1px solid var(--ob-edge)}
+.ob .tbl{font-size:.86rem}
+.ob .tbl th{font-family:'JetBrains Mono',monospace;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ob-cyan);border-bottom:1px solid var(--ob-edge)}
+.ob .tbl td{border-bottom:1px solid rgba(140,200,255,.08)}
+.ob .tbl tr:hover td{background:rgba(92,242,255,.05)}
+.ob .tbl tr.is-new td{background:rgba(255,91,214,.08)}
+.ob .tag{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--c)}
+.ob .new{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--ob-mag);margin-left:6px}
+.ob .empty{padding:32px;text-align:center;color:var(--ob-mute);font-family:'JetBrains Mono',monospace}
+.ob-login{min-height:620px;display:grid;place-items:center;padding:40px 16px;position:relative}
+.ob .lg{width:min(400px,100%);display:grid;gap:14px}
+.ob .lg .ob-btn{width:100%}
+@container stage (max-width: 1080px){
+  .ob-grid{grid-template-columns:240px minmax(0,1fr)}
+  .ob-panel{grid-column:1/-1}
+  .ob-gauges{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ob-feed{grid-column:1/-1}
+}
+@container stage (max-width: 640px){
+  .ob-in{padding:18px 16px 36px}
+  .ob-grid{grid-template-columns:1fr}
+  .ob-missions{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .ob-m{padding:10px}
+  .ob-code{font-size:1.1rem}
+  .ob-mt,.ob-coord{display:none}
+  .ob-dist{font-size:.6rem}
+  .ob-orbit{width:220px}
+  .ob-row2{grid-template-columns:1fr}
+  .ob-gauges{grid-template-columns:1fr}
+  .ob-gcard{grid-template-columns:auto minmax(0,1fr);justify-items:start;text-align:left;align-items:center}
+  .ob-gauge{width:92px}
+  .ob-gauge b{font-size:1.05rem}
+  .ob-ghost{margin-left:0}
+}
+
+/* =================== 3. DEPARTURES =================== */
+.dp{--dp-navy:#0E1B3D;--dp-navy2:#16264F;--dp-yellow:#FFC93C;--dp-sky:#E7EDF8;--dp-paper:#FFFFFF;--dp-mute:#5B6785;--dp-red:#D93F3F;--dp-rule:#C9D3E6;
+  background:var(--dp-sky);color:var(--dp-navy);font-family:'Archivo',system-ui,sans-serif;min-height:100%}
+.dp-in{max-width:1180px;margin:0 auto;padding-inline:28px}
+.dp-head{background:var(--dp-navy);color:#fff;padding-block:20px 34px}
+.dp-brandrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dp-brand{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:.02em}
+.dp-brand svg{color:var(--dp-yellow);transform:rotate(90deg)}
+.dp-link{border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;border-radius:8px;padding:7px 12px;font-family:'IBM Plex Mono',monospace;font-size:.78rem;cursor:pointer}
+.dp-link:hover{border-color:var(--dp-yellow);color:var(--dp-yellow)}
+.dp-head h1{font-weight:800;font-size:clamp(2.2rem,6cqi,4.2rem);letter-spacing:-.03em;line-height:1;margin:26px 0 22px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px}
+.dp-head h1 span{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:.9rem;letter-spacing:.08em;color:var(--dp-yellow);text-transform:uppercase}
+.dp-board{display:grid;gap:6px;background:#0A1430;border-radius:12px;padding:12px;font-family:'IBM Plex Mono',monospace}
+.dp-brow{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:16px;align-items:center;padding:6px 8px;border-radius:6px}
+.dp-brow.hd{font-size:.66rem;letter-spacing:.14em;color:#8C9BC2;padding-block:0}
+.dp-flap{display:flex;gap:3px}
+.dp-flap span{display:inline-grid;place-items:center;width:1.55em;height:1.95em;background:var(--dp-navy2);border-radius:3px;color:var(--dp-yellow);font-weight:600;font-size:1.05rem;position:relative;box-shadow:inset 0 -1px 0 rgba(0,0,0,.4)}
+.dp-flap span::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.45)}
+.dp-anim .dp-flap span{animation:dpFlip .55s cubic-bezier(.3,1.4,.6,1) both;animation-delay:calc(var(--i)*70ms)}
+@keyframes dpFlip{from{transform:rotateX(90deg);opacity:.2}to{transform:none;opacity:1}}
+.dp-bt{color:#fff;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dp-bm{color:#C7D2EE;font-size:.8rem}
+.dp-open{font-size:.72rem;font-weight:600;color:#0A1430;background:var(--dp-yellow);padding:3px 8px;border-radius:4px;animation:dpBlink 2.4s infinite}
+@keyframes dpBlink{50%{opacity:.55}}
+.dp-sec{padding-block:30px 8px}
+.dp-h2{font-weight:800;font-size:1.4rem;margin:0 0 16px;letter-spacing:-.01em}
+.dp-rail{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(310px,1fr);gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 4px 18px}
+.dp-pass{display:grid;grid-template-columns:minmax(0,1fr) 112px;background:var(--dp-paper);border-radius:16px;scroll-snap-align:start;filter:drop-shadow(0 8px 16px rgba(14,27,61,.12));transition:transform .2s}
+.dp-pass:hover{transform:translateY(-3px)}
+.dp-pass.is-sel{outline:3px solid var(--dp-yellow);outline-offset:2px}
+.dp-main{padding:18px;display:grid;gap:12px;min-width:0}
+.dp-route{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.dp-route small,.dp-stub small,.dp-meta dt{display:block;font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.12em;color:var(--dp-mute);text-transform:uppercase}
+.dp-route b{font-size:2rem;font-weight:800;line-height:1;letter-spacing:-.02em}
+.dp-route span{font-size:.75rem;color:var(--dp-mute)}
+.dp-route .dp-line{flex:1;height:2px;background:repeating-linear-gradient(90deg,var(--dp-rule) 0 6px,transparent 6px 11px);position:relative}
+.dp-route .dp-line svg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(90deg);color:var(--dp-navy);background:var(--dp-paper);padding:0 2px}
+.dp-main h3{margin:0;font-size:1.15rem}
+.dp-main>p{margin:0;font-size:.85rem;color:var(--dp-mute)}
+.dp-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0}
+.dp-meta dd{margin:0;font-weight:700;font-size:.9rem}
+.dp-stub{border-left:2px dashed var(--dp-rule);display:grid;align-content:center;justify-items:center;gap:6px;padding:14px 10px;text-align:center;position:relative}
+.dp-stub::before,.dp-stub::after{content:"";position:absolute;left:-12px;width:22px;height:22px;border-radius:50%;background:var(--dp-sky)}
+.dp-stub::before{top:-11px}.dp-stub::after{bottom:-11px}
+.dp-stub b{font-size:1.1rem}
+.dp-btn{border:0;border-radius:10px;padding:10px 14px;font-weight:800;font-size:.9rem;cursor:pointer;background:var(--dp-navy);color:#fff;transition:transform .1s,background .15s}
+.dp-btn:hover{background:#1B2E63}
+.dp-btn:active{transform:translateY(1px)}
+.dp-btn.y{background:var(--dp-yellow);color:var(--dp-navy)}
+.dp-btn.y:hover{background:#FFD566}
+.dp-btn.ghost{background:transparent;color:var(--dp-navy);border:2px solid var(--dp-rule)}
+.dp-btn:disabled{opacity:.6}
+.dp-checksec{padding-block:20px 56px}
+.dp-checkcard{background:var(--dp-paper);border-radius:20px;padding:26px;display:grid;gap:20px;max-width:760px;margin:0 auto;box-shadow:0 20px 40px -26px rgba(14,27,61,.4)}
+.dp-checkhd{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center}
+.dp-checkhd h2{margin:0;font-size:1.35rem}
+.dp-steps{list-style:none;display:flex;gap:6px;padding:0;margin:0;font-family:'IBM Plex Mono',monospace;font-size:.72rem}
+.dp-steps li{padding:5px 10px;border-radius:999px;background:var(--dp-sky);color:var(--dp-mute)}
+.dp-steps li.on{background:var(--dp-navy);color:#fff}
+.dp-steps li.done{background:var(--dp-yellow);color:var(--dp-navy)}
+.dp-form{display:grid;gap:16px}
+.dp-opts{border:0;padding:0;margin:0;display:grid;gap:10px}
+.dp-opts legend{font-weight:700;margin-bottom:10px}
+.dp-opt{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;border:2px solid var(--dp-rule);border-radius:12px;cursor:pointer;transition:border-color .15s}
+.dp-opt:hover{border-color:var(--dp-navy)}
+.dp-opt:has(input:checked){border-color:var(--dp-navy);background:#F4F7FD}
+.dp-opt input{accent-color:var(--dp-navy);width:18px;height:18px}
+.dp-opt b{font-family:'IBM Plex Mono',monospace;font-size:1rem}
+.dp-opt small{color:var(--dp-mute);font-family:'IBM Plex Mono',monospace;font-size:.72rem}
+.dp .fld{display:grid;gap:6px;min-width:0}
+.dp .fld label{font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dp-mute)}
+.dp .inp{width:100%;border:2px solid var(--dp-rule);border-radius:10px;padding:11px 12px;font:inherit;font-size:1rem;color:var(--dp-navy);background:#fff}
+.dp .inp:focus{outline:none;border-color:var(--dp-navy)}
+.dp .has-err .inp{border-color:var(--dp-red)}
+.dp .err{margin:0;color:var(--dp-red);font-size:.8rem;font-weight:600}
+.dp-row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.dp-stepper{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:6px}
+.dp-stepper button{border:2px solid var(--dp-rule);background:#fff;border-radius:10px;font-weight:800;font-size:1.2rem;cursor:pointer;color:var(--dp-navy)}
+.dp-stepper .inp{text-align:center;font-family:'IBM Plex Mono',monospace;font-weight:600}
+.dp-actions{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.dp-actions .dp-btn.y{margin-left:auto}
+.dp-bpass{display:grid;grid-template-columns:minmax(0,1fr) 150px;background:var(--dp-navy);color:#fff;border-radius:16px;overflow:hidden}
+.dp-bpass .dp-bm2{padding:20px;display:grid;gap:14px}
+.dp-bpass small{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.14em;color:#8C9BC2}
+.dp-bpass .big{font-size:2.2rem;font-weight:800;display:flex;align-items:center;gap:12px;letter-spacing:-.02em}
+.dp-bpass .big svg{color:var(--dp-yellow);transform:rotate(90deg)}
+.dp-bpass dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0}
+.dp-bpass dt{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.12em;color:#8C9BC2}
+.dp-bpass dd{margin:0;font-weight:700;overflow:hidden;text-overflow:ellipsis}
+.dp-bstub{background:var(--dp-yellow);color:var(--dp-navy);display:grid;align-content:center;justify-items:center;gap:8px;padding:14px;border-left:2px dashed var(--dp-navy)}
+.dp-bstub small{color:var(--dp-navy)}
+.dp-barcode{display:flex;height:64px;gap:2px;align-items:stretch}
+.dp-barcode i{background:var(--dp-navy);display:block}
+.dp-okp{margin:0;color:var(--dp-mute)}
+/* departures admin */
+.dp-tboard{display:grid;gap:6px;background:#0A1430;border-radius:12px;padding:12px;font-family:'IBM Plex Mono',monospace}
+.dp-trow{display:grid;grid-template-columns:auto minmax(0,1fr) 90px 90px minmax(80px,180px);gap:14px;align-items:center;padding:6px 8px;color:#fff;font-size:.86rem}
+.dp-trow.hd{font-size:.64rem;letter-spacing:.14em;color:#8C9BC2;padding-block:0}
+.dp-trow .n{text-align:right;color:var(--dp-yellow);font-weight:600;font-variant-numeric:tabular-nums}
+.dp-trow i{display:block;height:8px;background:var(--dp-navy2);border-radius:2px;overflow:hidden}
+.dp-trow i u{display:block;height:100%;background:var(--dp-yellow)}
+.dp-chips{display:flex;flex-wrap:wrap;gap:8px}
+.dp-chips button{border:2px solid var(--dp-rule);background:#fff;color:var(--dp-navy);border-radius:999px;padding:7px 14px;font-weight:700;font-size:.85rem;cursor:pointer}
+.dp-chips button[aria-pressed="true"]{background:var(--dp-navy);border-color:var(--dp-navy);color:#fff}
+.dp-tcard{background:#fff;border-radius:16px;overflow:hidden}
+.dp-sum{margin:0;padding:14px 16px;font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--dp-mute);border-bottom:2px dashed var(--dp-rule)}
+.dp .tbl{font-size:.88rem}
+.dp .tbl th{font-family:'IBM Plex Mono',monospace;font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dp-mute)}
+.dp .tbl td{border-top:1px solid #EEF2F9}
+.dp .tbl tr.is-new td{background:#FFF6DC}
+.dp .tag{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:.75rem;background:var(--dp-sky);padding:3px 7px;border-radius:5px}
+.dp .new{font-family:'IBM Plex Mono',monospace;font-size:.62rem;font-weight:600;background:var(--dp-yellow);padding:1px 5px;border-radius:4px;margin-left:6px}
+.dp .empty{padding:32px;text-align:center;color:var(--dp-mute)}
+.dp-adm{padding-block:26px 50px;display:grid;gap:18px}
+.dp-login{min-height:560px;display:grid;place-items:center;padding:40px 16px}
+.dp .lg{width:min(400px,100%);background:#fff;border-radius:18px;padding:26px;display:grid;gap:14px}
+@container stage (max-width: 640px){
+  .dp-in{padding-inline:16px}
+  .dp-brow{grid-template-columns:auto minmax(0,1fr) auto;gap:10px}
+  .dp-brow .dp-bm{display:none}
+  .dp-flap span{font-size:.9rem}
+  .dp-rail{grid-auto-columns:88%}
+  .dp-row2{grid-template-columns:1fr}
+  .dp-checkcard{padding:18px}
+  .dp-opt{grid-template-columns:auto auto minmax(0,1fr)}
+  .dp-opt small:last-child{display:none}
+  .dp-bpass{grid-template-columns:1fr}
+  .dp-bstub{border-left:0;border-top:2px dashed var(--dp-navy);grid-auto-flow:column;justify-content:space-between}
+  .dp-barcode{height:44px}
+  .dp-trow{grid-template-columns:auto minmax(0,1fr) 60px;gap:8px}
+  .dp-trow>:nth-child(3),.dp-trow>:nth-child(5){display:none}
+}
+
+/* =================== 4. ATLAS (editorial) =================== */
+.at{--at-paper:#F1F4F0;--at-ink:#15241D;--at-forest:#1E4A38;--at-brass:#A2742A;--at-rule:#C9D2CA;--at-mute:#56675E;--at-err:#B23A2E;--at-card:#FAFBF9;
+  background:var(--at-paper);color:var(--at-ink);font-family:'Manrope',system-ui,sans-serif;min-height:100%}
+.at-wrap{max-width:1180px;margin:0 auto;padding-inline:36px}
+.at-mast{border-bottom:1px solid var(--at-ink)}
+.at-mast .at-wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px}
+.at-logo{font-family:'Fraunces',Georgia,serif;font-size:1.25rem;font-weight:600;letter-spacing:-.01em}
+.at-logo em{color:var(--at-brass)}
+.at-nav{display:flex;gap:4px;align-items:center}
+.at-nav button{border:0;background:none;padding:8px 10px;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--at-ink)}
+.at-nav button:hover{color:var(--at-forest);text-decoration:underline;text-underline-offset:4px}
+.at-hero{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:56px;padding-block:56px 48px;align-items:end}
+.at-kicker{font-size:.72rem;text-transform:uppercase;letter-spacing:.16em;font-weight:700;color:var(--at-brass);margin:0}
+.at-hero h1{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:clamp(2.4rem,6.2cqi,5rem);line-height:.98;letter-spacing:-.03em;margin:14px 0 18px;text-wrap:balance}
+.at-hero h1 i{font-style:italic;color:var(--at-forest)}
+.at-hero p{max-width:48ch;color:var(--at-mute);font-size:1.05rem;margin:0}
+.at-toc{border-top:2px solid var(--at-ink)}
+.at-toc h2{font-size:.72rem;text-transform:uppercase;letter-spacing:.16em;margin:12px 0}
+.at-toc button{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;width:100%;text-align:left;border:0;border-bottom:1px solid var(--at-rule);background:none;padding:14px 0;cursor:pointer;color:var(--at-ink)}
+.at-toc button:hover b{color:var(--at-forest)}
+.at-toc b{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:1.25rem}
+.at-toc span{font-size:.8rem;color:var(--at-mute)}
+.at-toc em{grid-row:1/3;grid-column:2;align-self:center;font-style:normal;font-size:.8rem;color:var(--at-brass);font-weight:700}
+.at-trips{display:grid;gap:0;padding-bottom:20px}
+.at-trip{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);border-top:1px solid var(--at-ink)}
+.at-trip:nth-child(even) .at-panel{order:2}
+.at-panel{min-height:340px;position:relative;color:#fff;display:flex;flex-direction:column;justify-content:space-between;padding:28px;overflow:hidden}
+.at-panel.t-SIN{background:linear-gradient(150deg,#1E4A38,#2F7A5C 70%,#4F9C78)}
+.at-panel.t-JAI{background:linear-gradient(150deg,#8E3A35,#C2604F 70%,#DE9068)}
+.at-panel.t-LHR{background:linear-gradient(150deg,#1A2745,#33497A 70%,#5A6F9F)}
+.at-panel .big{font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:clamp(5rem,14cqi,10rem);line-height:.8;letter-spacing:-.04em;opacity:.95}
+.at-panel .ic{position:absolute;right:-30px;bottom:-30px;width:220px;height:220px;opacity:.16}
+.at-panel .coord{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
+.at-body{padding:34px 36px;display:grid;gap:14px;align-content:center}
+.at-body h3{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:clamp(1.8rem,3.4cqi,2.6rem);line-height:1.05;margin:0;letter-spacing:-.02em}
+.at-body>p{margin:0;color:var(--at-mute);max-width:52ch}
+.at-hl{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.at-hl li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:8px}
+.at-hl li::before{content:"";width:8px;height:8px;background:var(--at-brass);transform:rotate(45deg);margin-top:8px}
+.at-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--at-rule);padding-top:14px;margin-top:4px}
+.at-foot small{display:block;font-size:.72rem;color:var(--at-mute)}
+.at-foot b{font-family:'Fraunces',Georgia,serif;font-size:1.3rem;font-weight:600}
+.at-btn{border:1px solid var(--at-ink);background:var(--at-ink);color:var(--at-paper);padding:11px 18px;font-weight:700;font-size:.88rem;cursor:pointer;transition:background .15s,color .15s;border-radius:0}
+.at-btn:hover{background:var(--at-forest);border-color:var(--at-forest)}
+.at-btn.line{background:transparent;color:var(--at-ink)}
+.at-btn.line:hover{background:var(--at-ink);color:var(--at-paper)}
+.at-btn:disabled{opacity:.6}
+.at-enq{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:48px;padding-block:56px 72px;border-top:2px solid var(--at-ink);align-items:start}
+.at-sticky{position:sticky;top:20px;display:grid;gap:14px}
+.at-sticky h2{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:2.4rem;line-height:1;margin:0;letter-spacing:-.02em}
+.at-sum{border:1px solid var(--at-rule);background:var(--at-card);padding:18px;display:grid;gap:10px}
+.at-sum dl{margin:0;display:grid;gap:8px}
+.at-sum dl div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dotted var(--at-rule);padding-bottom:6px;font-size:.88rem}
+.at-sum dt{color:var(--at-mute)}
+.at-sum dd{margin:0;font-weight:700;text-align:right}
+.at-sum p{margin:0;font-size:.8rem;color:var(--at-mute)}
+.at-form{display:grid;grid-template-columns:1fr 1fr;gap:22px 24px}
+.at .fld{display:grid;gap:4px;min-width:0}
+.at .fld.span2{grid-column:1/-1}
+.at .fld label{font-size:.7rem;text-transform:uppercase;letter-spacing:.14em;font-weight:700;color:var(--at-mute)}
+.at .inp{width:100%;border:0;border-bottom:1.5px solid var(--at-ink);background:transparent;padding:10px 0;font:inherit;font-size:1.1rem;color:var(--at-ink);border-radius:0}
+.at .inp:focus{outline:none;border-bottom-color:var(--at-brass);box-shadow:0 2px 0 var(--at-brass)}
+.at select.inp{appearance:auto}
+.at .has-err .inp{border-bottom-color:var(--at-err)}
+.at .err{margin:0;color:var(--at-err);font-size:.8rem;font-weight:600}
+.at-form .at-btn{grid-column:1/-1;justify-self:start;padding:14px 26px;font-size:.95rem}
+.at-ok{border-top:2px solid var(--at-ink);padding-top:18px;display:grid;gap:12px}
+.at-ok h3{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:2.2rem;margin:0;line-height:1.05}
+.at-ok p{margin:0;color:var(--at-mute);max-width:52ch}
+.at-colophon{border-top:1px solid var(--at-ink);padding-block:18px;font-size:.78rem;color:var(--at-mute)}
+/* atlas admin */
+.at-rep{padding-block:40px 64px;display:grid;gap:30px}
+.at-rep h1{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:clamp(2rem,5cqi,3.6rem);line-height:1.02;margin:10px 0 0;letter-spacing:-.03em;text-wrap:balance}
+.at-rep h1 b{font-weight:700;color:var(--at-forest)}
+.at-share{display:flex;height:14px;border:1px solid var(--at-ink)}
+.at-share i{display:block;height:100%}
+.at-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:2px solid var(--at-ink)}
+.at-col{padding:18px 20px 18px 0;display:grid;gap:4px}
+.at-col+.at-col{border-left:1px solid var(--at-rule);padding-left:20px}
+.at-col .sw{width:12px;height:12px;display:inline-block;margin-right:8px}
+.at-col h3{margin:0;font-size:.78rem;text-transform:uppercase;letter-spacing:.12em}
+.at-col b{font-family:'Fraunces',Georgia,serif;font-size:3rem;font-weight:400;line-height:1;font-variant-numeric:tabular-nums}
+.at-col span{color:var(--at-mute);font-size:.85rem}
+.at-tabs{display:flex;flex-wrap:wrap;gap:22px;border-bottom:1px solid var(--at-rule)}
+.at-tabs button{border:0;background:none;padding:10px 0;cursor:pointer;font-weight:700;font-size:.9rem;color:var(--at-mute);border-bottom:2px solid transparent;margin-bottom:-1px}
+.at-tabs button[aria-pressed="true"]{color:var(--at-ink);border-bottom-color:var(--at-brass)}
+.at-sumline{margin:0;font-size:.85rem;color:var(--at-mute);font-style:italic;font-family:'Fraunces',Georgia,serif}
+.at .tbl{font-size:.9rem}
+.at .tbl th{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--at-mute);border-bottom:1.5px solid var(--at-ink);padding-left:0}
+.at .tbl td{border-bottom:1px solid var(--at-rule);padding-left:0}
+.at .tbl tr.is-new td{background:#E6EEE4}
+.at .tag{font-family:'Fraunces',Georgia,serif;font-style:italic}
+.at .new{font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--at-brass);margin-left:6px}
+.at .empty{padding:30px 0;font-family:'Fraunces',Georgia,serif;font-style:italic;color:var(--at-mute)}
+.at-login{min-height:560px;display:grid;place-items:center;padding:40px 16px}
+.at .lg{width:min(420px,100%);border-top:2px solid var(--at-ink);padding-top:18px;display:grid;gap:18px}
+.at .lg h2{font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:2.2rem}
+@container stage (max-width: 860px){
+  .at-hero,.at-enq{grid-template-columns:1fr;gap:32px}
+  .at-trip{grid-template-columns:1fr}
+  .at-trip:nth-child(even) .at-panel{order:0}
+  .at-panel{min-height:220px}
+  .at-sticky{position:static}
+}
+@container stage (max-width: 560px){
+  .at-wrap{padding-inline:16px}
+  .at-nav button:not(:last-child){display:none}
+  .at-hero{padding-block:32px}
+  .at-body{padding:22px 16px}
+  .at-form{grid-template-columns:1fr}
+  .at-cols{grid-template-columns:1fr}
+  .at-col+.at-col{border-left:0;border-top:1px solid var(--at-rule);padding-left:0}
+}
+
+/* =================== 5. PLAYGROUND =================== */
+.pg{--pg-sky:#EEF5FF;--pg-ink:#22305A;--pg-tomato:#FF6A55;--pg-sun:#FFC23A;--pg-teal:#12B5A2;--pg-white:#FFFFFF;--pg-mute:#5C6890;--pg-err:#D93A2B;
+  position:relative;overflow:clip;background:var(--pg-sky);color:var(--pg-ink);font-family:'Nunito',system-ui,sans-serif;font-size:16px;min-height:100%}
+.pg-blobs i{position:absolute;border-radius:50%;filter:blur(2px);opacity:.5;pointer-events:none}
+.pg-blobs i:nth-child(1){width:260px;height:260px;background:var(--pg-sun);top:-80px;left:-60px}
+.pg-blobs i:nth-child(2){width:180px;height:180px;background:var(--pg-teal);top:120px;right:-50px;opacity:.35}
+.pg-blobs i:nth-child(3){width:120px;height:120px;background:var(--pg-tomato);top:300px;left:12%;opacity:.25}
+.pg-in{position:relative;max-width:1100px;margin:0 auto;padding:20px 28px 56px;display:grid;gap:34px}
+.pg-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.pg-logo{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:1.6rem;letter-spacing:-.01em;line-height:1}
+.pg-logo b{color:var(--pg-tomato)}
+.pg-logo u{text-decoration:none;color:var(--pg-teal)}
+.pg-btn{border:0;border-radius:14px;padding:11px 18px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;background:var(--pg-ink);color:#fff;box-shadow:0 4px 0 #111A38;transition:transform .1s,box-shadow .1s}
+.pg-btn:hover{transform:translateY(-1px)}
+.pg-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #111A38}
+.pg-btn.alt{background:var(--pg-white);color:var(--pg-ink);box-shadow:0 4px 0 #C5D2EA}
+.pg-btn.big{font-size:1.25rem;padding:14px 28px;background:var(--pg-tomato);box-shadow:0 5px 0 #C9402E}
+.pg-btn:disabled{opacity:.7}
+.pg-hero{text-align:center;display:grid;gap:10px;justify-items:center}
+.pg-hero h1{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:clamp(2.2rem,6.4cqi,4.4rem);line-height:.98;margin:0;letter-spacing:-.02em;text-wrap:balance;max-width:16ch}
+.pg-hero h1 span{position:relative;color:var(--pg-tomato);white-space:nowrap}
+.pg-hero h1 span::after{content:"";position:absolute;left:0;right:0;bottom:.06em;height:.22em;background:var(--pg-sun);z-index:-1;border-radius:4px;transform:rotate(-1.5deg)}
+.pg-hero p{margin:0;font-size:1.1rem;color:var(--pg-mute);max-width:44ch}
+.pg-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px}
+.pg-tile{--rot:0deg;background:var(--pg-white);border-radius:26px;padding:22px;display:grid;gap:10px;align-content:start;position:relative;transform:rotate(var(--rot));transition:transform .25s cubic-bezier(.3,1.6,.6,1),box-shadow .2s;box-shadow:0 6px 0 #D7E2F5}
+.pg-tile:nth-child(1){--rot:-1.6deg}.pg-tile:nth-child(2){--rot:1.2deg}.pg-tile:nth-child(3){--rot:-.8deg}
+.pg-tile:hover{transform:rotate(0) translateY(-6px)}
+.pg-tile.is-sel{box-shadow:0 0 0 4px var(--c),0 6px 0 #D7E2F5}
+.pg-blob{width:72px;height:72px;border-radius:40% 60% 55% 45%/55% 45% 55% 45%;background:var(--c);color:#fff;display:grid;place-items:center}
+.pg-blob svg{width:40px;height:40px}
+.pg-tile.t-SIN{--c:var(--pg-teal)}.pg-tile.t-JAI{--c:var(--pg-tomato)}.pg-tile.t-LHR{--c:#5B6CF0}
+.pg-tile h3{margin:4px 0 0;font-family:'Baloo 2',sans-serif;font-weight:800;font-size:1.5rem;line-height:1.05}
+.pg-place{margin:0;color:var(--pg-mute);font-weight:700;font-size:.9rem}
+.pg-pills{display:flex;flex-wrap:wrap;gap:6px}
+.pg-pills span{font-size:.78rem;font-weight:800;padding:4px 10px;border-radius:999px;background:var(--pg-sky)}
+.pg-tile>p{margin:0;font-size:.92rem;color:var(--pg-mute)}
+.pg-tile .pg-btn{justify-self:start;margin-top:4px;background:var(--c);box-shadow:0 4px 0 color-mix(in srgb,var(--c) 70%,#000)}
+.pg-sticker{position:absolute;top:-12px;right:16px;background:var(--pg-sun);font-family:'Baloo 2',sans-serif;font-weight:800;padding:4px 12px;border-radius:12px;transform:rotate(8deg);box-shadow:0 3px 0 #D59A12;animation:pgPop .35s cubic-bezier(.3,1.8,.6,1)}
+@keyframes pgPop{from{transform:rotate(8deg) scale(0)}}
+.pg-card{background:var(--pg-white);border-radius:28px;padding:30px;box-shadow:0 8px 0 #D7E2F5;position:relative}
+.pg-ml h2{margin:0 0 14px;font-family:'Baloo 2',sans-serif;font-weight:800;font-size:1.7rem}
+.pg-sentence{font-size:clamp(1.15rem,2.6cqi,1.6rem);line-height:2.2;margin:0 0 18px;font-weight:600}
+.pg-in-f{border:0;border-bottom:3px dashed #B9C7E4;background:var(--pg-sky);border-radius:10px 10px 0 0;padding:2px 10px;font:inherit;font-weight:800;color:var(--pg-ink);max-width:100%;transition:border-color .15s,background .15s}
+.pg-in-f:focus{outline:none;border-bottom-color:var(--pg-teal);border-bottom-style:solid;background:#E1F7F3}
+.pg-in-f::placeholder{color:#9AA8C8;font-weight:700}
+.pg-in-f.bad{border-bottom-color:var(--pg-err);border-bottom-style:solid;background:#FFECE9}
+select.pg-in-f{cursor:pointer}
+.pg-errs{list-style:none;padding:12px 16px;margin:0 0 18px;background:#FFF1EE;border-radius:14px;display:grid;gap:4px}
+.pg-errs button{border:0;background:none;padding:0;color:var(--pg-err);font-weight:700;cursor:pointer;text-align:left;font-size:.92rem}
+.pg-ok{text-align:center;display:grid;gap:10px;justify-items:center;padding-block:10px}
+.pg-ok h2{margin:0;font-family:'Baloo 2',sans-serif;font-weight:800;font-size:2rem}
+.pg-ok p{margin:0;color:var(--pg-mute);max-width:46ch}
+.pg-conf{position:absolute;left:50%;top:40%;width:10px;height:14px;border-radius:2px;background:var(--c);animation:pgConf 1.1s cubic-bezier(.2,.7,.4,1) forwards;pointer-events:none}
+@keyframes pgConf{to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
+/* playground admin */
+.pg-tally{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.pg-tc{background:var(--pg-white);border-radius:22px;padding:20px;display:grid;gap:8px;box-shadow:0 6px 0 #D7E2F5}
+.pg-tc.t-SIN{--c:var(--pg-teal)}.pg-tc.t-JAI{--c:var(--pg-tomato)}.pg-tc.t-LHR{--c:#5B6CF0}
+.pg-tc h3{margin:0;font-family:'Baloo 2',sans-serif;font-weight:800;font-size:1.2rem;display:flex;gap:8px;align-items:center}
+.pg-tc h3 i{width:12px;height:12px;border-radius:50%;background:var(--c)}
+.pg-tc b{font-family:'Baloo 2',sans-serif;font-size:2.6rem;line-height:1;font-variant-numeric:tabular-nums}
+.pg-tc b small{font-size:1rem;color:var(--pg-mute);font-family:'Nunito',sans-serif}
+.pg-prog{height:16px;border-radius:99px;background:var(--pg-sky);overflow:hidden}
+.pg-prog u{display:block;height:100%;background:repeating-linear-gradient(45deg,var(--c) 0 10px,color-mix(in srgb,var(--c) 80%,#fff) 10px 20px);border-radius:99px}
+.pg-tc p{margin:0;font-size:.85rem;color:var(--pg-mute);font-weight:700}
+.pg-pillsrow{display:flex;flex-wrap:wrap;gap:8px}
+.pg-pillsrow button{border:0;border-radius:999px;padding:8px 16px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;background:var(--pg-white);color:var(--pg-ink);box-shadow:0 3px 0 #D7E2F5}
+.pg-pillsrow button[aria-pressed="true"]{background:var(--pg-ink);color:#fff;box-shadow:0 3px 0 #111A38}
+.pg-tcard{background:var(--pg-white);border-radius:22px;overflow:hidden;box-shadow:0 6px 0 #D7E2F5}
+.pg-sum{margin:0;padding:14px 18px;font-weight:700;color:var(--pg-mute);font-size:.9rem}
+.pg .tbl{font-size:.9rem}
+.pg .tbl th{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--pg-mute);background:var(--pg-sky)}
+.pg .tbl tbody tr:nth-child(even) td{background:#F7FAFF}
+.pg .tbl tr.is-new td{background:#FFF6DA!important}
+.pg .tag{font-weight:800;font-size:.78rem;padding:3px 10px;border-radius:999px;color:#fff;background:var(--c)}
+.pg .new{font-size:.68rem;font-weight:800;background:var(--pg-sun);padding:1px 7px;border-radius:999px;margin-left:6px}
+.pg .empty{padding:30px;text-align:center;color:var(--pg-mute);font-weight:700}
+.pg .fld{display:grid;gap:6px;min-width:0}
+.pg .fld label{font-weight:800;font-size:.9rem}
+.pg .inp{width:100%;border:3px solid #D7E2F5;border-radius:14px;padding:10px 12px;font:inherit;color:var(--pg-ink);background:#fff}
+.pg .inp:focus{outline:none;border-color:var(--pg-teal)}
+.pg .has-err .inp{border-color:var(--pg-err)}
+.pg .err{margin:0;color:var(--pg-err);font-weight:700;font-size:.85rem}
+.pg-login{min-height:560px;display:grid;place-items:center;padding:40px 16px;position:relative}
+.pg .lg{width:min(400px,100%);display:grid;gap:14px}
+.pg .lg h2{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:1.8rem}
+@container stage (max-width: 760px){ .pg-tally{grid-template-columns:1fr} }
+@container stage (max-width: 560px){
+  .pg-in{padding:16px 16px 40px;gap:26px}
+  .pg-card{padding:20px}
+  .pg-tile{--rot:0deg!important}
+  .pg-sentence{line-height:2.4}
+}
+</style>
+
+<div class="shell">
+  <header class="sh-head">
+    <p class="sh-eyebrow">Take-home design exploration</p>
+    <h1>Five directions for the School Trip Interest app</h1>
+    <p class="lede">Each concept is a working prototype of the same brief: three trips, a teacher interest form with live validation, and an admin view with a trip filter and student totals. Submit the form, then switch to Admin to see your entry at the top of the table. Use Phone to check the mobile layout.</p>
+  </header>
+
+  <nav class="sh-tabs" id="tabs" aria-label="Design concepts"></nav>
+
+  <div class="sh-bar">
+    <div class="seg" role="group" aria-label="View">
+      <button type="button" data-view="public" aria-pressed="true">Teacher page</button>
+      <button type="button" data-view="admin" aria-pressed="false">Admin</button>
+    </div>
+    <div class="seg" role="group" aria-label="Preview size">
+      <button type="button" data-device="desktop" aria-pressed="true">Desktop</button>
+      <button type="button" data-device="phone" aria-pressed="false">Phone</button>
+    </div>
+    <span class="hint">Sample data only. Nothing leaves this page.</span>
+  </div>
+
+  <div id="stage" class="stage"></div>
+
+  <section id="notes" class="sh-notes" aria-label="Concept notes"></section>
+
+  <section class="sh-sec" aria-labelledby="cmp-h">
+    <h2 id="cmp-h">How they compare for a 48-hour take-home</h2>
+    <div class="cmp-wrap">
+      <table class="cmp" id="cmp"></table>
+    </div>
+  </section>
+
+  <section class="sh-sec" aria-labelledby="pick-h">
+    <p class="sh-eyebrow">My recommendation</p>
+    <h2 id="pick-h">Build Campus, and borrow the boarding-pass confirmation from Departures</h2>
+    <div class="pick">
+      <div>
+        <p>Campus covers every line of the brief with the least code. It looks trustworthy to schools, works on phones without extra effort, and every part maps to plain Tailwind classes you can explain on the call.</p>
+        <p>Add one signature moment: when a teacher submits, show the boarding-pass confirmation with a reference code. It takes about an hour and gives the app personality without adding risk.</p>
+      </div>
+      <ul>
+        <li><b>Form above the fold.</b> Teachers can register without scrolling, which is the page's one job.</li>
+        <li><b>Admin is a real dashboard.</b> KPIs, a filter that shows each trip's count and students, search and sort. This goes beyond "filter by trip, total per trip" without much extra code.</li>
+        <li><b>Dark mode comes almost free</b> with CSS variables, a nice talking point.</li>
+        <li><b>Skip Orbit for this task.</b> It's the most striking, but the canvas, glass and animation take about a day of polish and add code the brief didn't ask for.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+const TRIPS = [
+  { id:'singapore-stem', code:'SIN', title:'Singapore STEM', long:'Singapore STEM Discovery', place:'Singapore', days:'6 days · 5 nights', short:'6D/5N', grades:'Grades 8–12', gshort:'Gr 8–12', season:'May 2027', price:'₹1,45,000', pshort:'₹1.45L', km:'~3,300 km', coords:'1.35°N 103.82°E', icon:'atom', color:'#12A594',
+    blurb:'Robotics labs, the Science Centre and Gardens by the Bay, with a hands-on session at a university innovation lab.',
+    highlights:['Science Centre Singapore','Gardens by the Bay biodomes','University robotics lab visit'] },
+  { id:'jaipur-heritage', code:'JAI', title:'Jaipur Heritage', long:'Jaipur Heritage Trail', place:'Jaipur, Rajasthan', days:'4 days · 3 nights', short:'4D/3N', grades:'Grades 5–10', gshort:'Gr 5–10', season:'Dec 2026', price:'₹28,500', pshort:'₹28.5K', km:'~1,100 km', coords:'26.91°N 75.79°E', icon:'arch', color:'#D9573F',
+    blurb:'Forts, stepwells and the stone instruments of Jantar Mantar, plus a block-printing workshop with local artisans.',
+    highlights:['Amber Fort at sunrise','Jantar Mantar astronomy walk','Block-printing workshop'] },
+  { id:'london-universities', code:'LHR', title:'London Universities', long:'London Universities Tour', place:'London, UK', days:'8 days · 7 nights', short:'8D/7N', grades:'Grades 10–12', gshort:'Gr 10–12', season:'Apr 2027', price:'₹2,90,000', pshort:'₹2.9L', km:'~7,700 km', coords:'51.51°N 0.13°W', icon:'cap', color:'#4A63C9',
+    blurb:'Campus tours and admissions talks at leading universities, with a day in Oxford and an afternoon at the British Museum.',
+    highlights:["UCL and King's College tours",'Oxford day trip','British Museum'] }
+];
+// Sample rows (fictional teachers and schools)
+let submissions = [
+  { at:'2026-10-25T13:10:00Z', name:'Priya Raman', school:'Banyan Grove Public School', email:'priya.raman@banyangrove.edu.in', phone:'+919849012345', trip:'singapore-stem', students:42 },
+  { at:'2026-10-25T09:42:00Z', name:'Mohammed Irfan', school:'Hillcrest International', email:'irfan.m@hillcrest.edu.in', phone:'+919701234567', trip:'london-universities', students:18 },
+  { at:'2026-10-25T05:35:00Z', name:'Lakshmi Narayan', school:'Lakeview Academy', email:'lakshmi.n@lakeview.ac.in', phone:'+918885551234', trip:'jaipur-heritage', students:65 },
+  { at:'2026-10-24T12:18:00Z', name:'Arjun Mehta', school:'Deccan Valley School', email:'arjun.mehta@deccanvalley.edu.in', phone:'+919912345678', trip:'singapore-stem', students:30 },
+  { at:'2026-10-24T07:50:00Z', name:'Sneha Kulkarni', school:'Riverside Global School', email:'sneha.k@riversideglobal.in', phone:'+917702345678', trip:'jaipur-heritage', students:54 },
+  { at:'2026-10-24T03:32:00Z', name:'Ravi Teja', school:'St. Ignatius High School', email:'raviteja@stignatius.edu.in', phone:'+919490123456', trip:'london-universities', students:24 },
+  { at:'2026-10-23T11:00:00Z', name:'Fatima Siddiqui', school:'Greenfield International', email:'fatima.s@greenfield.edu.in', phone:'+918019876543', trip:'singapore-stem', students:36 },
+  { at:'2026-10-23T04:45:00Z', name:'Kiran Reddy', school:'Sunrise Vidyalaya', email:'kiran.reddy@sunrisevidyalaya.in', phone:'+919948765432', trip:'jaipur-heritage', students:80 }
+];
+
+const ICON = {
+  atom:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><ellipse cx="24" cy="24" rx="20" ry="8"/><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(120 24 24)"/><circle cx="24" cy="24" r="3.2" fill="currentColor"/></svg>',
+  arch:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 42h38M10 42V22a14 14 0 0 1 28 0v20M17 42V26a7 7 0 0 1 14 0v16M24 3v5M20 8h8"/></svg>',
+  cap:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M3 18 24 9l21 9-21 9z"/><path d="M12 22v10c0 3 5.4 6 12 6s12-3 12-6V22M45 18v12"/></svg>'
+};
+const CHECK = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const PLANE = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M21 15.5v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V8.5l-8 5v2l8-2.5V18l-2 1.5V21l3.5-1 3.5 1v-1.5L13 18v-5z"/></svg>';
+const MOON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+const SUN = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+
+const state = { concept:'campus', view:'public', device:'desktop', filter:'all', search:'', sort:{key:'at',dir:'desc'},
+  values:{}, errors:{}, success:null, step:1, loggedIn:true, loginErr:'', cpMode:'light', dpAnimated:false, burst:false };
+const ALL = ['name','school','email','phone','trip','students'];
+const stage = document.getElementById('stage');
+let anim = 0, ro = null;
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const tripBy = id => TRIPS.find(t => t.id === id);
+const first = n => esc(String(n || '').trim().split(/\s+/)[0]);
+
+function normPhone(raw){
+  let d = String(raw || '').replace(/[\s\-().]/g, '');
+  if (d.startsWith('+91')) d = d.slice(3);
+  else if (d.length === 12 && d.startsWith('91')) d = d.slice(2);
+  else if (d.length === 11 && d.startsWith('0')) d = d.slice(1);
+  return d;
+}
+function validate(v, fields = ALL){
+  const e = {}, has = f => fields.includes(f);
+  if (has('name') && String(v.name || '').trim().length < 2) e.name = 'Enter your full name.';
+  if (has('school') && String(v.school || '').trim().length < 2) e.school = "Enter your school's name.";
+  if (has('email') && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(v.email || '').trim())) e.email = 'Enter a valid email, like name@school.edu.in.';
+  if (has('phone') && !/^[6-9]\d{9}$/.test(normPhone(v.phone))) e.phone = 'Enter a 10-digit mobile number starting with 6, 7, 8 or 9.';
+  if (has('trip') && !tripBy(v.trip)) e.trip = 'Choose one of the three trips.';
+  if (has('students')){
+    const raw = String(v.students ?? '').trim(), n = Number(raw);
+    if (!raw) e.students = 'Enter how many students might join.';
+    else if (!Number.isInteger(n) || n < 1 || n > 500) e.students = 'Enter a whole number from 1 to 500.';
+  }
+  return e;
+}
+function totals(){
+  const m = {}; TRIPS.forEach(t => m[t.id] = { count:0, students:0 });
+  submissions.forEach(s => { m[s.trip].count++; m[s.trip].students += s.students; });
+  return m;
+}
+const grand = () => submissions.reduce((a, s) => a + s.students, 0);
+function listFor(opts = {}){
+  let l = submissions.filter(s => state.filter === 'all' || s.trip === state.filter);
+  if (opts.search && state.search.trim()){
+    const q = state.search.trim().toLowerCase();
+    l = l.filter(s => [s.name, s.school, s.email].some(x => x.toLowerCase().includes(q)));
+  }
+  const key = opts.sort ? state.sort.key : 'at', dir = opts.sort ? state.sort.dir : 'desc';
+  return [...l].sort((a, b) => (a[key] < b[key] ? -1 : a[key] > b[key] ? 1 : 0) * (dir === 'asc' ? 1 : -1));
+}
+function fmtDate(iso){
+  return new Date(iso).toLocaleString('en-IN', { day:'numeric', month:'short', hour:'numeric', minute:'2-digit', hour12:true, timeZone:'Asia/Kolkata' });
+}
+const fmtPhone = p => p.replace(/^\+91(\d{5})(\d{5})$/, '+91 $1 $2');
+function summary(l){
+  const s = l.reduce((a, x) => a + x.students, 0), t = tripBy(state.filter);
+  return `Showing ${l.length} submission${l.length === 1 ? '' : 's'} · ${s} students${t ? ' on ' + t.title : ' across all trips'}`;
+}
+
+/* ---------- shared markup ---------- */
+function fld(name, label, o = {}){
+  const id = 'f-' + name, err = state.errors[name], val = state.values[name] ?? '';
+  const aria = `aria-invalid="${!!err}"${err ? ` aria-describedby="${id}-err"` : ''}`;
+  const control = o.type === 'select'
+    ? `<select id="${id}" name="${name}" class="inp" ${aria}><option value="">${o.ph || 'Choose a trip'}</option>${TRIPS.map(t => `<option value="${t.id}"${val === t.id ? ' selected' : ''}>${t.title}</option>`).join('')}</select>`
+    : `<input id="${id}" name="${name}" type="${o.type || 'text'}" class="inp" value="${esc(val)}" placeholder="${esc(o.ph || '')}" ${o.attrs || ''} ${aria}>`;
+  return `<div class="fld${err ? ' has-err' : ''}${o.cls ? ' ' + o.cls : ''}"><label for="${id}">${label}</label>${o.wrap ? o.wrap(control) : control}${err ? `<p class="err" id="${id}-err" data-errfor="${name}">${err}</p>` : ''}</div>`;
+}
+const HP = '<div class="hp" aria-hidden="true"><label for="f-website">Website</label><input id="f-website" name="website" tabindex="-1" autocomplete="off"></div>';
+const F = {
+  name: (l = 'Your name') => fld('name', l, { ph:'e.g. Priya Raman', attrs:'autocomplete="name"' }),
+  school: (l = 'School', cls) => fld('school', l, { ph:'e.g. Banyan Grove Public School', attrs:'autocomplete="organization"', cls }),
+  email: (l = 'Email') => fld('email', l, { type:'email', ph:'name@school.edu.in', attrs:'autocomplete="email"' }),
+  phone: (l = 'Mobile number') => fld('phone', l, { type:'tel', ph:'98490 12345', attrs:'autocomplete="tel" inputmode="tel"' }),
+  trip: (l = 'Trip') => fld('trip', l, { type:'select' }),
+  students: (l = 'Number of students', o = {}) => fld('students', l, { type:'number', ph:'e.g. 40', attrs:'min="1" max="500" step="1" inputmode="numeric"', ...o })
+};
+function filterBtns(fmt){
+  const T = totals();
+  return [`<button type="button" data-filter="all" aria-pressed="${state.filter === 'all'}">${fmt('All trips', submissions.length, grand())}</button>`]
+    .concat(TRIPS.map(t => `<button type="button" data-filter="${t.id}" aria-pressed="${state.filter === t.id}">${fmt(t.title, T[t.id].count, T[t.id].students, t)}</button>`)).join('');
+}
+function tableHTML(l, sortable){
+  if (!l.length) return `<div class="empty">${state.search ? 'No submissions match that search.' : 'No submissions for this trip yet.'}</div>`;
+  const arrow = k => state.sort.key === k ? (state.sort.dir === 'asc' ? ' ↑' : ' ↓') : '';
+  const th = (k, label, cls = '') => sortable ? `<th class="${cls}"><button class="th-sort" data-sort="${k}">${label}${arrow(k)}</button></th>` : `<th class="${cls}">${label}</th>`;
+  return `<div class="tbl-wrap"><table class="tbl"><thead><tr>${th('at', 'Received')}<th>Teacher</th><th>School</th><th>Email</th><th>Phone</th><th>Trip</th>${th('students', 'Students', 'num')}</tr></thead><tbody>${
+    l.map(s => { const t = tripBy(s.trip); return `<tr class="${s.isNew ? 'is-new' : ''}"><td>${fmtDate(s.at)}</td><td>${esc(s.name)}${s.isNew ? '<span class="new">New</span>' : ''}</td><td>${esc(s.school)}</td><td>${esc(s.email)}</td><td>${fmtPhone(s.phone)}</td><td><span class="tag" style="--c:${t.color}">${t.title}</span></td><td class="num"><b>${s.students}</b></td></tr>`; }).join('')
+  }</tbody></table></div>`;
+}
+function loginCard(o){
+  const e = state.loginErr;
+  return `<form class="lg ${o.cls || ''}" data-form="login" novalidate>
+    <p class="lg-eyebrow">${o.eyebrow || 'Staff only'}</p><h2>${o.title || 'Sign in to admin'}</h2>
+    <p class="lg-sub">Use the email and password your team created in Supabase Auth. Public sign-up is turned off.</p>
+    <div class="fld"><label for="f-lemail">Email</label><input class="inp" id="f-lemail" name="email" type="email" value="admin@school-trips.test" autocomplete="username"></div>
+    <div class="fld${e ? ' has-err' : ''}"><label for="f-lpass">Password</label><input class="inp" id="f-lpass" name="password" type="password" placeholder="At least 6 characters" autocomplete="current-password" aria-invalid="${!!e}">${e ? `<p class="err">${e}</p>` : ''}</div>
+    <button class="${o.btn}" type="submit">Sign in</button>
+    <p class="lg-demo">Prototype: any password with 6 or more characters signs you in.</p>
+    <button type="button" class="lg-back" data-goview="public">← Back to the teacher page</button>
+  </form>`;
+}
+function refCode(rec){ return 'STI-' + tripBy(rec.trip).code + '-' + rec.ref; }
+
+/* =================== CONCEPTS =================== */
+const CONCEPTS = {};
+
+/* ---------- 1. Campus ---------- */
+CONCEPTS.campus = {
+  label:'Campus', tag:'Clean & trustworthy', rec:true, dots:['#0E7C74','#0F1B2A','#E8A317'], scrollOnPick:true,
+  notes:{ mood:'Calm, credible and quick to scan. It feels like a product a school principal would trust with their contact details.',
+    layout:'The form sits beside the pitch, above the fold. Trip cards below pre-fill it. Admin is a sidebar app with KPI cards, a trip filter that shows each count, search, and sortable columns.',
+    best:'Teachers and school admins on laptops and phones. Maps one-to-one to the brief.',
+    effort:'Low. Plain Tailwind, or shadcn/ui for the table and inputs.',
+    risk:'Can look generic if spacing and type are sloppy. The care goes into details.',
+    palette:[['#0E7C74','Teal'],['#0F1B2A','Ink'],['#E8A317','Amber'],['#F5F7F9','Mist'],['#121B24','Night']],
+    fonts:[['Plus Jakarta Sans','Headings, body and numbers'],['IBM Plex Mono','Reference codes only']],
+    extra:'Try the moon icon: this one ships light and dark modes.' },
+  live(){
+    const t = tripBy(state.values.trip), n = state.values.students;
+    if (!t) return 'Choose a trip to see a summary of your request.';
+    return `<b>${t.title}</b> · ${t.days} · ${t.season} · ${n ? `<b>${esc(n)}</b> students` : 'add a student count'}`;
+  },
+  publicView(){
+    const s = state.success;
+    const form = s ? `<div class="cp-ok"><span class="cp-okic">${CHECK}</span><h2>Interest registered</h2>
+        <p>Thanks, ${first(s.name)}. We've noted <b>${s.students} students</b> from ${esc(s.school)} for <b>${tripBy(s.trip).title}</b>. We'll reply to ${esc(s.email)} within two working days.</p>
+        <span class="cp-ref">Reference ${refCode(s)}</span>
+        <div class="cp-okbtns"><button class="cp-btn cp-primary" data-again>Register another trip</button><button class="cp-btn cp-outline" data-goadmin>See it in admin</button></div></div>`
+      : `<form class="cp-form" data-form="interest" novalidate>
+        <div class="cp-fh"><h2>Register your interest</h2><p>Takes about a minute. No payment needed.</p></div>
+        <div class="cp-fgrid">${F.name()}${F.school()}${F.email()}${F.phone()}${F.trip()}${F.students()}</div>${HP}
+        <div class="cp-live" data-live>${this.live()}</div>
+        <button class="cp-btn cp-primary cp-submit" type="submit">Register interest</button></form>`;
+    return `<div class="cp" data-mode="${state.cpMode}">
+      <header class="cp-nav"><div class="cp-in cp-nav-in">
+        <span class="cp-brand"><span class="cp-mark">ST</span>School Trips</span>
+        <nav class="cp-links" aria-label="Sections"><button data-scroll="cp-trips">Trips</button><button data-scroll="form-anchor">Register</button></nav>
+        <div class="cp-nav-r"><button class="cp-icon" data-cpmode aria-label="Switch light or dark mode">${state.cpMode === 'dark' ? SUN : MOON}</button><button class="cp-btn cp-ghost" data-goadmin>Admin</button></div>
+      </div></header>
+      <section class="cp-hero"><div class="cp-in cp-hero-in">
+        <div class="cp-copy">
+          <span class="cp-pill"><i></i>2027 season · registrations open</span>
+          <h1>Educational trips your students will remember</h1>
+          <p>Tell us which trip interests your school and roughly how many students might join. We reply within two working days with dates, costs and next steps.</p>
+          <ul class="cp-trust"><li><b>3</b><span>curated trips</span></li><li><b>5–12</b><span>grades covered</span></li><li><b>2 days</b><span>to hear back</span></li></ul>
+        </div>
+        <div class="cp-card cp-formcard" id="form-anchor">${form}</div>
+      </div></section>
+      <section class="cp-trips" id="cp-trips"><div class="cp-in">
+        <div class="cp-sechead"><h2>Choose a trip</h2><p>Selecting one fills in the form above.</p></div>
+        <div class="cp-grid">${TRIPS.map(t => { const sel = state.values.trip === t.id; return `
+          <article class="cp-card cp-trip t-${t.code}${sel ? ' is-sel' : ''}">
+            <div class="cp-tband"><span class="cp-ticon">${ICON[t.icon]}</span><span class="cp-chip">${t.days}</span></div>
+            <div class="cp-tbody"><h3>${t.long}</h3><p class="cp-place">${t.place} · ${t.grades} · ${t.season}</p><p>${t.blurb}</p>
+              <ul class="cp-hl">${t.highlights.map(h => `<li>${CHECK}${h}</li>`).join('')}</ul></div>
+            <div class="cp-tfoot"><div><small>From, per student (indicative)</small><b>${t.price}</b></div>
+              <button class="cp-btn ${sel ? 'cp-primary' : 'cp-outline'}" data-pick="${t.id}" aria-pressed="${sel}">${sel ? CHECK + ' Selected' : 'Select trip'}</button></div>
+          </article>`; }).join('')}</div>
+      </div></section>
+      <footer class="cp-foot"><div class="cp-in">School Trips · prototype with sample content</div></footer>
+    </div>`;
+  },
+  tableBlock(){
+    const l = listFor({ search:true, sort:true });
+    return `<p class="cp-sum">${summary(l)}</p>${tableHTML(l, true)}`;
+  },
+  adminView(){
+    const T = totals(), g = grand(), max = Math.max(1, ...TRIPS.map(t => T[t.id].students));
+    const top = TRIPS.slice().sort((a, b) => T[b.id].students - T[a.id].students)[0];
+    return `<div class="cp cp-app" data-mode="${state.cpMode}">
+      <aside class="cp-side">
+        <span class="cp-brand"><span class="cp-mark">ST</span>Admin</span>
+        <nav class="cp-snav" aria-label="Admin sections"><span class="is-on">Submissions <em>${submissions.length}</em></span><span>Trips</span><span>Export <em>next</em></span></nav>
+        <div class="cp-user"><span class="cp-av">AD</span><div><b>Admin</b><small>admin@school-trips.test</small></div><button class="cp-link" data-logout>Log out</button></div>
+      </aside>
+      <main class="cp-main">
+        <div class="cp-mhead"><div><h1>Submissions</h1><p>Every interest form teachers have sent, newest first.</p></div>
+          <div class="cp-mh-r"><button class="cp-icon" data-cpmode aria-label="Switch light or dark mode">${state.cpMode === 'dark' ? SUN : MOON}</button><button class="cp-btn cp-outline" disabled title="Planned next">Export CSV</button><button class="cp-btn cp-ghost" data-goview="public">View site</button></div></div>
+        <div class="cp-kpis">
+          <div class="cp-card cp-kpi"><small>Submissions</small><b>${submissions.length}</b><span>from ${new Set(submissions.map(s => s.school)).size} schools</span></div>
+          <div class="cp-card cp-kpi"><small>Students interested</small><b>${g}</b><span>all trips</span></div>
+          <div class="cp-card cp-kpi"><small>Average group</small><b>${Math.round(g / Math.max(1, submissions.length))}</b><span>students per school</span></div>
+          <div class="cp-card cp-kpi cp-wide"><small>Students per trip · most popular: ${top.title}</small><div class="cp-bars">${TRIPS.map(t => `
+            <div class="cp-bar"><span>${t.title}</span><i><u style="width:${T[t.id].students / max * 100}%;--c:${t.color}"></u></i><b>${T[t.id].students}</b></div>`).join('')}</div></div>
+        </div>
+        <div class="cp-card cp-tablecard">
+          <div class="cp-tools"><div class="cp-seg" role="group" aria-label="Filter by trip">${filterBtns((name, c, s) => `${name}<small>${c} forms · ${s} students</small>`)}</div>
+            <input id="f-search" class="cp-search" type="search" placeholder="Search teacher, school or email" value="${esc(state.search)}" data-search aria-label="Search submissions"></div>
+          <div data-tablebox>${this.tableBlock()}</div>
+        </div>
+      </main></div>`;
+  },
+  loginView(){ return `<div class="cp" data-mode="${state.cpMode}"><div class="cp-login">${loginCard({ cls:'cp-card', btn:'cp-btn cp-primary' })}</div></div>`; }
+};
+
+/* ---------- 2. Orbit ---------- */
+CONCEPTS.orbit = {
+  label:'Orbit', tag:'Futuristic', dots:['#04060D','#5CF2FF','#FF5BD6'],
+  notes:{ mood:'A night-sky control deck: glass panels, neon edges, a moving starfield and cards that tilt toward your cursor.',
+    layout:'A three-column deck: destinations with real coordinates and distance from Hyderabad, an orbiting preview of the chosen trip, and a glass form panel. Admin is "Mission Control", with ring gauges and a live feed.',
+    best:'A strong first impression, or a STEM-led brand. Good for a portfolio piece.',
+    effort:'High. Canvas animation, glass effects, careful contrast work and testing on phones.',
+    risk:'Harder to read for older users and heavy on low-end phones. More code to defend on the call than the brief needs.',
+    palette:[['#04060D','Void'],['#5CF2FF','Cyan'],['#FF5BD6','Magenta'],['#DDE7FF','Starlight'],['#8592B8','Haze']],
+    fonts:[['Unbounded','Display'],['Chakra Petch','Body'],['JetBrains Mono','Labels and data']],
+    extra:'Move your cursor over the destination cards.' },
+  publicView(){
+    const chosen = !!state.values.trip, t = tripBy(state.values.trip) || TRIPS[0], s = state.success;
+    const panel = s ? `<div class="ob-ok"><div class="ob-pulse">${CHECK}</div><p class="ob-label">Signal received</p><h3>You're on the manifest</h3>
+        <p>${s.students} students from ${esc(s.school)} · ${tripBy(s.trip).title}</p><p>Reference <code>${refCode(s)}</code></p>
+        <button class="ob-btn" data-again>Register another</button><button class="ob-ghost" style="margin:0" data-goadmin>Open mission control →</button></div>`
+      : `<p class="ob-label">02 / Transmit details</p><h3>Register your interest</h3>
+        <form class="ob-form" data-form="interest" novalidate>${F.name('Teacher name')}${F.school()}<div class="ob-row2">${F.email()}${F.phone('Mobile')}</div><div class="ob-row2">${F.trip('Destination')}${F.students('Students')}</div>${HP}
+        <button class="ob-btn" type="submit">Transmit interest ⟶</button></form>`;
+    return `<div class="ob"><canvas class="ob-stars" aria-hidden="true"></canvas><div class="ob-in">
+      <header class="ob-top"><span class="ob-logo"><span class="ob-ring"></span>EDU//ORBIT</span><span class="ob-stat"><i></i>REGISTRATIONS OPEN · SEASON 2027</span><button class="ob-ghost" data-goadmin>Mission control →</button></header>
+      <div class="ob-title"><p class="ob-label">// School trip interest</p><h1>Pick a destination.<br><span>Launch your class.</span></h1></div>
+      <section class="ob-grid">
+        <div class="ob-missions"><p class="ob-label">01 / Select destination</p>${TRIPS.map(m => `
+          <button class="ob-m${state.values.trip === m.id ? ' is-on' : ''}" data-pick="${m.id}" data-tilt aria-pressed="${state.values.trip === m.id}">
+            <span class="ob-code">${m.code}</span><span class="ob-mt">${m.title}</span><span class="ob-coord">${m.coords}</span><span class="ob-dist">HYD → ${m.code} · ${m.km}</span></button>`).join('')}</div>
+        <div class="ob-core"><div class="ob-orbit"><div class="ob-r r1"></div><div class="ob-r r2"><i></i></div><div class="ob-r r3"><i></i></div><div class="ob-planet t-${t.code}">${ICON[t.icon]}</div></div>
+          <div class="ob-info"><p class="ob-label">${chosen ? 'Locked in' : 'Previewing'} · ${t.code}</p><h2>${t.long}</h2>
+            <div class="ob-chips"><span>${t.days}</span><span>${t.grades}</span><span>${t.season}</span><span>${t.price}</span></div>
+            <ul class="ob-hl">${t.highlights.map(h => `<li>${h}</li>`).join('')}</ul></div></div>
+        <div class="ob-panel" id="form-anchor">${panel}</div>
+      </section></div></div>`;
+  },
+  adminView(){
+    const T = totals(), g = Math.max(1, grand());
+    const feed = listFor().slice(0, 5);
+    return `<div class="ob"><canvas class="ob-stars" aria-hidden="true"></canvas><div class="ob-in">
+      <header class="ob-top"><span class="ob-logo"><span class="ob-ring"></span>MISSION CONTROL</span><span class="ob-stat"><i></i>${submissions.length} SIGNALS · ${grand()} STUDENTS</span><button class="ob-ghost" data-goview="public">← Public deck</button><button class="ob-ghost" style="margin-left:0" data-logout>Log out</button></header>
+      <div class="ob-gauges">${TRIPS.map(t => `<div class="ob-gcard"><div class="ob-gauge" style="--p:${Math.round(T[t.id].students / g * 100)};--c:${t.code === 'SIN' ? '#5CF2FF' : t.code === 'JAI' ? '#FF5BD6' : '#9C8BFF'}"><div><b>${T[t.id].students}</b><small>STUDENTS</small></div></div>
+          <div><h4>${t.title}</h4><p>${T[t.id].count} schools · ${Math.round(T[t.id].students / g * 100)}% of demand</p></div></div>`).join('')}
+        <div class="ob-feed"><p class="ob-label">Live feed</p><ul>${feed.map(s => `<li><i></i><span>${esc(s.school)} → ${tripBy(s.trip).code}</span><em>+${s.students}</em></li>`).join('')}</ul></div>
+      </div>
+      <div class="ob-chipsrow" role="group" aria-label="Filter by trip">${filterBtns((n, c, s, t) => `${t ? t.code : 'ALL'} · ${s}`)}</div>
+      <div class="ob-tcard"><p class="ob-sum">${summary(listFor())}</p>${tableHTML(listFor())}</div>
+    </div></div>`;
+  },
+  loginView(){ return `<div class="ob"><canvas class="ob-stars" aria-hidden="true"></canvas><div class="ob-login"><div class="ob-panel">${loginCard({ btn:'ob-btn', eyebrow:'Authorised crew only', title:'Mission control' })}</div></div></div>`; },
+  mount(){
+    const cv = stage.querySelector('.ob-stars'); if (!cv) return;
+    const host = cv.parentElement, ctx = cv.getContext('2d'), dpr = Math.min(2, window.devicePixelRatio || 1);
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const stars = Array.from({ length:170 }, () => ({ x:Math.random(), y:Math.random(), z:Math.random() * .8 + .2 }));
+    let w = 0, h = 0;
+    const size = () => { w = host.clientWidth; h = host.clientHeight; cv.width = w * dpr; cv.height = h * dpr; cv.style.width = w + 'px'; cv.style.height = h + 'px'; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
+    const draw = () => {
+      ctx.clearRect(0, 0, w, h);
+      for (const s of stars){
+        if (!still){ s.y += .00045 * s.z; if (s.y > 1) s.y = 0; }
+        ctx.globalAlpha = .25 + .75 * s.z; ctx.fillStyle = s.z > .85 ? '#9FF7FF' : '#DDE7FF';
+        ctx.fillRect(s.x * w, s.y * h, s.z * 1.8, s.z * 1.8);
+      }
+      ctx.globalAlpha = 1;
+      if (!still) anim = requestAnimationFrame(draw);
+    };
+    size(); draw();
+    ro = new ResizeObserver(() => { size(); if (still) draw(); }); ro.observe(host);
+    stage.querySelectorAll('[data-tilt]').forEach(el => {
+      el.addEventListener('pointermove', e => { const r = el.getBoundingClientRect(); el.style.setProperty('--rx', ((.5 - (e.clientY - r.top) / r.height) * 12) + 'deg'); el.style.setProperty('--ry', (((e.clientX - r.left) / r.width - .5) * 14) + 'deg'); });
+      el.addEventListener('pointerleave', () => { el.style.setProperty('--rx', '0deg'); el.style.setProperty('--ry', '0deg'); });
+    });
+  }
+};
+
+/* ---------- 3. Departures ---------- */
+const STEP_FIELDS = { 1:['trip'], 2:['school','students'], 3:['name','email','phone'] };
+CONCEPTS.departures = {
+  label:'Departures', tag:'Playful travel', dots:['#0E1B3D','#FFC93C','#E7EDF8'],
+  notes:{ mood:'Airport check-in. Trips are boarding passes and the header is a split-flap departures board.',
+    layout:'A rail of boarding passes, then a three-step check-in form (Destination, Group, Contact). Submitting prints a boarding pass with a reference code. Admin is a departures board of totals.',
+    best:'Memorable and on-theme while staying easy to use. The confirmation pass is worth stealing for any concept.',
+    effort:'Medium. Wizard state plus ticket-shaped CSS.',
+    risk:'A multi-step form is more state to explain, and ticket shapes need care on small screens.',
+    palette:[['#0E1B3D','Navy'],['#FFC93C','Signal'],['#E7EDF8','Sky'],['#D93F3F','Alert'],['#FFFFFF','Paper']],
+    fonts:[['Archivo','Headings and body'],['IBM Plex Mono','Board, labels and codes']],
+    extra:'Pick a pass on the rail to jump straight to step 2.' },
+  publicView(){
+    const s = state.success, step = state.step, anim = state.dpAnimated ? '' : ' dp-anim';
+    state.dpAnimated = true;
+    const flap = code => `<span class="dp-flap">${[...code].map((c, i) => `<span style="--i:${i}">${c}</span>`).join('')}</span>`;
+    const pass = t => { const sel = state.values.trip === t.id; return `
+      <article class="dp-pass${sel ? ' is-sel' : ''}"><div class="dp-main">
+        <div class="dp-route"><div><small>From</small><b>HYD</b><span>Hyderabad</span></div><div class="dp-line">${PLANE}</div><div style="text-align:right"><small>To</small><b>${t.code}</b><span>${t.place.split(',')[0]}</span></div></div>
+        <h3>${t.long}</h3><dl class="dp-meta"><div><dt>Duration</dt><dd>${t.short}</dd></div><div><dt>Class</dt><dd>${t.gshort}</dd></div><div><dt>Departs</dt><dd>${t.season}</dd></div></dl><p>${t.blurb}</p></div>
+        <div class="dp-stub"><small>From</small><b>${t.pshort}</b><button class="dp-btn${sel ? ' y' : ''}" data-pick="${t.id}" aria-pressed="${sel}">${sel ? 'Selected' : 'Select'}</button></div></article>`; };
+    let body;
+    if (s){
+      const t = tripBy(s.trip), ref = refCode(s);
+      const bars = [...(ref + s.name)].map((c, i) => `<i style="width:${(c.charCodeAt(0) + i) % 4 + 1}px"></i>`).join('');
+      body = `<div class="dp-checkhd"><h2>You're checked in</h2><ol class="dp-steps"><li class="done">Destination</li><li class="done">Group</li><li class="done">Contact</li></ol></div>
+        <div class="dp-bpass"><div class="dp-bm2"><small>BOARDING PASS · INTEREST REGISTERED</small><div class="big">HYD ${PLANE} ${t.code}</div>
+          <dl><div><dt>TEACHER</dt><dd>${esc(s.name)}</dd></div><div><dt>SCHOOL</dt><dd>${esc(s.school)}</dd></div><div><dt>TRIP</dt><dd>${t.title}</dd></div><div><dt>PASSENGERS</dt><dd>${s.students} students</dd></div></dl></div>
+          <div class="dp-bstub"><div class="dp-barcode">${bars}</div><small>${ref}</small></div></div>
+        <p class="dp-okp">We'll email ${esc(s.email)} within two working days with dates and costs.</p>
+        <div class="dp-actions"><button class="dp-btn ghost" data-goadmin>See it on the admin board</button><button class="dp-btn y" data-again>Register another trip</button></div>`;
+    } else {
+      const e = state.errors;
+      const stepBody = step === 1
+        ? `<fieldset class="dp-opts"><legend>Which trip is your school interested in?</legend>${TRIPS.map(t => `
+            <label class="dp-opt"><input type="radio" name="trip" value="${t.id}"${state.values.trip === t.id ? ' checked' : ''}${e.trip ? ' aria-invalid="true"' : ''}><b>${t.code}</b><span>${t.long}</span><small>${t.short} · ${t.gshort}</small></label>`).join('')}
+            ${e.trip ? `<p class="err" data-errfor="trip">${e.trip}</p>` : ''}</fieldset>`
+        : step === 2
+        ? `${F.school('School name')}${F.students('Number of students', { wrap:c => `<div class="dp-stepper"><button type="button" data-delta="-1" aria-label="One fewer student">−</button>${c}<button type="button" data-delta="1" aria-label="One more student">+</button></div>` })}`
+        : `${F.name('Teacher name')}<div class="dp-row2">${F.email()}${F.phone()}</div>`;
+      body = `<div class="dp-checkhd"><h2>Check in your interest</h2><ol class="dp-steps">${['Destination','Group','Contact'].map((l, i) => `<li class="${i + 1 < step ? 'done' : i + 1 === step ? 'on' : ''}"${i + 1 === step ? ' aria-current="step"' : ''}>${i + 1 < step ? '✓ ' : ''}${l}</li>`).join('')}</ol></div>
+        <form class="dp-form" data-form="interest" data-step="${step}" novalidate>${stepBody}${HP}
+          <div class="dp-actions">${step > 1 ? '<button type="button" class="dp-btn ghost" data-back>← Back</button>' : ''}<button class="dp-btn y" type="submit">${step < 3 ? 'Continue →' : 'Register interest'}</button></div></form>`;
+    }
+    return `<div class="dp">
+      <header class="dp-head"><div class="dp-in">
+        <div class="dp-brandrow"><span class="dp-brand">${PLANE} School Trips</span><button class="dp-link" data-goadmin>Admin board</button></div>
+        <h1>Departures <span>2027 school season · from Hyderabad</span></h1>
+        <div class="dp-board${anim}" role="table" aria-label="Upcoming trips">
+          <div class="dp-brow hd" role="row"><span role="columnheader">TO</span><span role="columnheader">TRIP</span><span class="dp-bm" role="columnheader">DEPARTS</span><span role="columnheader">STATUS</span></div>
+          ${TRIPS.map(t => `<div class="dp-brow" role="row">${flap(t.code)}<span class="dp-bt" role="cell">${t.title.toUpperCase()}</span><span class="dp-bm" role="cell">${t.season.toUpperCase()}</span><span class="dp-open" role="cell">BOARDING</span></div>`).join('')}
+        </div></div></header>
+      <section class="dp-in dp-sec"><h2 class="dp-h2">Choose your destination</h2><div class="dp-rail">${TRIPS.map(pass).join('')}</div></section>
+      <section class="dp-in dp-checksec" id="form-anchor"><div class="dp-checkcard">${body}</div></section>
+    </div>`;
+  },
+  adminView(){
+    const T = totals(), max = Math.max(1, ...TRIPS.map(t => T[t.id].students));
+    return `<div class="dp"><header class="dp-head"><div class="dp-in">
+        <div class="dp-brandrow"><span class="dp-brand">${PLANE} Admin board</span><span style="display:flex;gap:8px"><button class="dp-link" data-goview="public">Public page</button><button class="dp-link" data-logout>Log out</button></span></div>
+        <h1>Interest board <span>${submissions.length} schools · ${grand()} students</span></h1>
+        <div class="dp-tboard" role="table" aria-label="Students per trip">
+          <div class="dp-trow hd" role="row"><span>TO</span><span>TRIP</span><span class="n">SCHOOLS</span><span class="n">STUDENTS</span><span>LOAD</span></div>
+          ${TRIPS.map(t => `<div class="dp-trow" role="row"><span class="dp-flap">${[...t.code].map(c => `<span>${c}</span>`).join('')}</span><span>${t.title.toUpperCase()}</span><span class="n">${T[t.id].count}</span><span class="n">${T[t.id].students}</span><i><u style="width:${T[t.id].students / max * 100}%"></u></i></div>`).join('')}
+        </div></div></header>
+      <div class="dp-in dp-adm">
+        <div class="dp-chips" role="group" aria-label="Filter by trip">${filterBtns((n, c, s) => `${n} · ${s}`)}</div>
+        <div class="dp-tcard"><p class="dp-sum">${summary(listFor())}</p>${tableHTML(listFor())}</div>
+      </div></div>`;
+  },
+  loginView(){ return `<div class="dp"><header class="dp-head"><div class="dp-in"><div class="dp-brandrow"><span class="dp-brand">${PLANE} School Trips</span></div></div></header><div class="dp-login">${loginCard({ btn:'dp-btn y', eyebrow:'Crew access', title:'Admin board' })}</div></div>`; }
+};
+
+/* ---------- 4. Atlas ---------- */
+CONCEPTS.atlas = {
+  label:'Atlas', tag:'Editorial', dots:['#1E4A38','#A2742A','#F1F4F0'], scrollOnPick:true,
+  notes:{ mood:'A travel magazine: large serif headlines, alternating feature spreads, lots of white space and hairline rules.',
+    layout:'A hero with a contents list, alternating full-width trip spreads, then a two-column form with a sticky "Your enquiry" summary. Admin reads like a printed interest report.',
+    best:'Premium positioning (the London trip is ₹2.9L per student), aimed at principals and parents.',
+    effort:'Medium. Mostly typography and layout, with very little JavaScript.',
+    risk:'A long scroll before the form, and it feels less like an app.',
+    palette:[['#1E4A38','Forest'],['#A2742A','Brass'],['#F1F4F0','Paper'],['#15241D','Ink'],['#C9D2CA','Rule']],
+    fonts:[['Fraunces','Display and numbers'],['Manrope','Body and labels']],
+    extra:'Pick a trip and watch the sticky summary next to the form update.' },
+  summaryBox(){
+    const t = tripBy(state.values.trip), v = state.values;
+    return `<dl><div><dt>Trip</dt><dd>${t ? t.title : 'Not chosen'}</dd></div><div><dt>Season</dt><dd>${t ? t.season : '—'}</dd></div><div><dt>Students</dt><dd>${v.students ? esc(v.students) : '—'}</dd></div><div><dt>Indicative total</dt><dd>${t && Number(v.students) > 0 ? '₹' + (Number(t.price.replace(/[^\d]/g, '')) * Number(v.students)).toLocaleString('en-IN') : '—'}</dd></div></dl>`;
+  },
+  publicView(){
+    const s = state.success;
+    const right = s ? `<div class="at-ok"><p class="at-kicker">Received · ${refCode(s)}</p><h3>Thank you, ${first(s.name)}.</h3>
+        <p>We've noted ${s.students} students from ${esc(s.school)} for the ${tripBy(s.trip).long}. Expect a reply at ${esc(s.email)} within two working days.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="at-btn" data-again>Register another</button><button class="at-btn line" data-goadmin>Read the report</button></div></div>`
+      : `<form class="at-form" data-form="interest" novalidate>${F.name()}${F.school('School', 'span2')}${F.email()}${F.phone()}${F.trip()}${F.students()}${HP}<button class="at-btn" type="submit">Send enquiry</button></form>`;
+    return `<div class="at">
+      <header class="at-mast"><div class="at-wrap"><span class="at-logo">Field <em>&amp;</em> Classroom</span>
+        <nav class="at-nav" aria-label="Sections"><button data-scroll="at-trips">Journeys</button><button data-scroll="form-anchor">Enquire</button><button data-goadmin>Admin</button></nav></div></header>
+      <div class="at-wrap">
+        <section class="at-hero"><div><p class="at-kicker">The 2027 season · Three journeys</p><h1>Take your class somewhere they'll <i>talk about</i> for years.</h1>
+          <p>Small-group educational trips designed with teachers, from Rajasthan's observatories to Singapore's labs and London's lecture halls.</p></div>
+          <nav class="at-toc" aria-label="Journeys"><h2>In this season</h2>${TRIPS.map(t => `<button data-pick="${t.id}"><b>${t.title}</b><span>${t.place} · ${t.days}</span><em>${t.season}</em></button>`).join('')}</nav></section>
+      </div>
+      <section class="at-trips" id="at-trips">${TRIPS.map(t => `
+        <article class="at-trip"><div class="at-panel t-${t.code}"><span class="coord">${t.coords}</span><span class="big">${t.code}</span><span class="ic">${ICON[t.icon]}</span></div>
+          <div class="at-body"><p class="at-kicker">${t.days} · ${t.grades}</p><h3>${t.long}</h3><p>${t.blurb}</p>
+            <ul class="at-hl">${t.highlights.map(h => `<li>${h}</li>`).join('')}</ul>
+            <div class="at-foot"><div><small>From, per student (indicative)</small><b>${t.price}</b></div><button class="at-btn${state.values.trip === t.id ? '' : ' line'}" data-pick="${t.id}" aria-pressed="${state.values.trip === t.id}">${state.values.trip === t.id ? 'Selected' : 'Enquire about this trip'}</button></div></div></article>`).join('')}</section>
+      <div class="at-wrap"><section class="at-enq" id="form-anchor">
+        <div class="at-sticky"><p class="at-kicker">Register interest</p><h2>Your enquiry</h2><div class="at-sum"><div data-live>${this.summaryBox()}</div><p>No payment now. We confirm dates and final costs by email.</p></div></div>
+        <div>${right}</div></section></div>
+      <footer class="at-colophon"><div class="at-wrap">Field &amp; Classroom · prototype with sample content</div></footer>
+    </div>`;
+  },
+  adminView(){
+    const T = totals(), g = Math.max(1, grand());
+    const colors = { SIN:'#1E4A38', JAI:'#C2604F', LHR:'#33497A' };
+    return `<div class="at"><header class="at-mast"><div class="at-wrap"><span class="at-logo">Field <em>&amp;</em> Classroom <small style="font-family:Manrope;font-size:.75rem;color:var(--at-mute)">· Admin</small></span>
+        <nav class="at-nav"><button data-goview="public">Public site</button><button data-logout>Log out</button></nav></div></header>
+      <div class="at-wrap at-rep">
+        <div><p class="at-kicker">Interest report · updated ${fmtDate(new Date().toISOString())}</p><h1><b>${grand()}</b> students from <b>${new Set(submissions.map(s => s.school)).size}</b> schools want to travel next season.</h1></div>
+        <div class="at-share" role="img" aria-label="Share of students by trip">${TRIPS.map(t => `<i style="width:${T[t.id].students / g * 100}%;background:${colors[t.code]}"></i>`).join('')}</div>
+        <div class="at-cols">${TRIPS.map(t => `<div class="at-col"><h3><span class="sw" style="background:${colors[t.code]}"></span>${t.title}</h3><b>${T[t.id].students}</b><span>students · ${T[t.id].count} schools · ${Math.round(T[t.id].students / g * 100)}%</span></div>`).join('')}</div>
+        <div class="at-tabs" role="group" aria-label="Filter by trip">${filterBtns(n => n)}</div>
+        <p class="at-sumline">${summary(listFor())}</p>
+        ${tableHTML(listFor())}
+      </div></div>`;
+  },
+  loginView(){ return `<div class="at"><header class="at-mast"><div class="at-wrap"><span class="at-logo">Field <em>&amp;</em> Classroom</span></div></header><div class="at-login">${loginCard({ btn:'at-btn', eyebrow:'Staff', title:'Sign in' })}</div></div>`; }
+};
+
+/* ---------- 5. Playground ---------- */
+CONCEPTS.playground = {
+  label:'Playground', tag:'Friendly & bright', dots:['#FF6A55','#FFC23A','#12B5A2'], scrollOnPick:true,
+  notes:{ mood:'Cheerful sticker-like tiles, chunky buttons and bright colour. Warm without being childish.',
+    layout:'A centred single column: three tilted trip tiles, then a fill-in-the-blanks sentence form ("Hi! I\'m ___ from ___"). Admin shows each trip\'s tally against seat capacity.',
+    best:'Primary and middle-school teachers, and sharing on WhatsApp groups.',
+    effort:'Low to medium.',
+    risk:'The sentence form is unusual. It is harder for screen readers and on phones, and may feel less serious to buyers of the ₹2.9L London trip.',
+    palette:[['#FF6A55','Tomato'],['#FFC23A','Sunflower'],['#12B5A2','Teal'],['#22305A','Ink'],['#EEF5FF','Sky']],
+    fonts:[['Baloo 2','Display'],['Nunito','Body']],
+    extra:'Submit the sentence form to see the confetti.' },
+  publicView(){
+    const s = state.success, e = state.errors, v = state.values;
+    const mi = (name, ph, w, type = 'text', label, attrs = '') => `<label class="sr" for="f-${name}">${label}</label><input id="f-${name}" name="${name}" type="${type}" class="pg-in-f${e[name] ? ' bad' : ''}" style="width:${w}ch" placeholder="${ph}" value="${esc(v[name] ?? '')}" aria-invalid="${!!e[name]}" ${attrs}>`;
+    const sel = `<label class="sr" for="f-trip">Trip</label><select id="f-trip" name="trip" class="pg-in-f${e.trip ? ' bad' : ''}" aria-invalid="${!!e.trip}"><option value="">pick a trip</option>${TRIPS.map(t => `<option value="${t.id}"${v.trip === t.id ? ' selected' : ''}>${t.title}</option>`).join('')}</select>`;
+    const box = s ? `<div class="pg-card pg-ok" data-confetti><h2>Yay, you're on the list!</h2><p>${s.students} students from ${esc(s.school)} are pencilled in for <b>${tripBy(s.trip).title}</b>. We'll write to ${esc(s.email)} within two working days.</p><p style="font-weight:800">Ref ${refCode(s)}</p><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class="pg-btn" data-again>Add another trip</button><button class="pg-btn alt" data-goadmin>Peek at the tally</button></div></div>`
+      : `<form class="pg-card pg-ml" data-form="interest" novalidate><h2>Tell us about your group</h2>
+        <p class="pg-sentence">Hi! I'm ${mi('name', 'your name', 13, 'text', 'Your name', 'autocomplete="name"')} from ${mi('school', 'your school', 19, 'text', 'School', 'autocomplete="organization"')}. I'd love to bring ${mi('students', '40', 4, 'number', 'Number of students', 'min="1" max="500" inputmode="numeric"')} students on the ${sel} trip. Email me at ${mi('email', 'name@school.edu.in', 20, 'email', 'Email', 'autocomplete="email"')} or call ${mi('phone', '98490 12345', 12, 'tel', 'Mobile number', 'autocomplete="tel"')}.</p>
+        ${Object.keys(e).length ? `<ul class="pg-errs" aria-label="Fix these">${ALL.filter(k => e[k]).map(k => `<li data-errfor="${k}"><button type="button" data-focus="f-${k}">${e[k]}</button></li>`).join('')}</ul>` : ''}${HP}
+        <button class="pg-btn big" type="submit">Count us in!</button></form>`;
+    return `<div class="pg"><div class="pg-blobs" aria-hidden="true"><i></i><i></i><i></i></div><div class="pg-in">
+      <header class="pg-top"><span class="pg-logo">field<b>trips</b><u>!</u></span><button class="pg-btn alt" data-goadmin>Admin</button></header>
+      <section class="pg-hero"><h1>Where should your class go <span>next?</span></h1><p>Pick a trip, tell us about your group, and we'll plan the rest.</p></section>
+      <section class="pg-tiles">${TRIPS.map(t => { const on = v.trip === t.id; return `<article class="pg-tile t-${t.code}${on ? ' is-sel' : ''}">${on ? '<span class="pg-sticker">Picked!</span>' : ''}<div class="pg-blob">${ICON[t.icon]}</div><h3>${t.title}</h3><p class="pg-place">${t.place} · ${t.season}</p><div class="pg-pills"><span>${t.days}</span><span>${t.grades}</span></div><p>${t.blurb}</p><button class="pg-btn" data-pick="${t.id}" aria-pressed="${on}">${on ? 'Picked' : 'Pick this trip'}</button></article>`; }).join('')}</section>
+      <section id="form-anchor">${box}</section>
+    </div></div>`;
+  },
+  adminView(){
+    const T = totals(), CAP = 150;
+    return `<div class="pg"><div class="pg-blobs" aria-hidden="true"><i></i><i></i><i></i></div><div class="pg-in">
+      <header class="pg-top"><span class="pg-logo">trip<b>tally</b><u>!</u></span><span style="display:flex;gap:8px"><button class="pg-btn alt" data-goview="public">Public page</button><button class="pg-btn" data-logout>Log out</button></span></header>
+      <section class="pg-tally">${TRIPS.map(t => `<div class="pg-tc t-${t.code}"><h3><i></i>${t.title}</h3><b>${T[t.id].students} <small>/ ${CAP} seats</small></b><div class="pg-prog"><u style="width:${Math.min(100, T[t.id].students / CAP * 100)}%"></u></div><p>${T[t.id].count} schools interested</p></div>`).join('')}</section>
+      <div class="pg-pillsrow" role="group" aria-label="Filter by trip">${filterBtns((n, c, s) => `${n} (${s})`)}</div>
+      <div class="pg-tcard"><p class="pg-sum">${summary(listFor())}</p>${tableHTML(listFor())}</div>
+    </div></div>`;
+  },
+  loginView(){ return `<div class="pg"><div class="pg-blobs" aria-hidden="true"><i></i><i></i><i></i></div><div class="pg-login"><div class="pg-card">${loginCard({ btn:'pg-btn big', eyebrow:'Team only', title:'Hello again!' })}</div></div></div>`; },
+  mount(){
+    const box = stage.querySelector('[data-confetti]');
+    if (!box || !state.burst || matchMedia('(prefers-reduced-motion: reduce)').matches) { state.burst = false; return; }
+    state.burst = false;
+    const cols = ['#FF6A55','#FFC23A','#12B5A2','#5B6CF0'];
+    for (let i = 0; i < 46; i++){
+      const p = document.createElement('i'); p.className = 'pg-conf';
+      const a = Math.random() * Math.PI * 2, d = 120 + Math.random() * 180;
+      p.style.cssText = `--c:${cols[i % 4]};--x:${Math.cos(a) * d}px;--y:${Math.sin(a) * d - 60}px;--r:${Math.random() * 720 - 360}deg;animation-delay:${Math.random() * 120}ms`;
+      box.appendChild(p); setTimeout(() => p.remove(), 1400);
+    }
+  }
+};
+
+/* =================== shell + events =================== */
+const ORDER = ['campus','orbit','departures','atlas','playground'];
+const tabsEl = document.getElementById('tabs'), notesEl = document.getElementById('notes');
+tabsEl.innerHTML = ORDER.map(k => { const c = CONCEPTS[k]; return `<button type="button" class="sh-tab" data-concept="${k}" aria-pressed="false">${c.rec ? '<span class="sh-badge">Recommended</span>' : ''}<b>${c.label}</b><span>${c.tag}</span><span class="dots">${c.dots.map(d => `<i style="background:${d}"></i>`).join('')}</span></button>`; }).join('');
+
+const SCORES = { campus:[5,5,5,5,3], orbit:[2,2,3,3,5], departures:[4,3,4,4,4], atlas:[4,4,4,4,4], playground:[3,4,4,3,3] };
+const dots = n => `<span class="dots" aria-label="${n} of 5">${'●'.repeat(n)}<s>${'●'.repeat(5 - n)}</s></span>`;
+document.getElementById('cmp').innerHTML = `<thead><tr><th>Concept</th><th>Fits the brief</th><th>Buildable in 48 h</th><th>Easy to explain</th><th>Mobile comfort</th><th>Wow factor</th></tr></thead><tbody>${
+  ORDER.map(k => `<tr class="${CONCEPTS[k].rec ? 'is-rec' : ''}"><td><b>${CONCEPTS[k].label}</b> <span style="color:var(--mute)">${CONCEPTS[k].tag}</span></td>${SCORES[k].map(n => `<td>${dots(n)}</td>`).join('')}</tr>`).join('')}</tbody>`;
+
+function renderNotes(){
+  const c = CONCEPTS[state.concept], n = c.notes;
+  notesEl.innerHTML = `<div><p class="sh-eyebrow">${c.tag}${c.rec ? ' · Recommended' : ''}</p><h2>${c.label}</h2><p class="nt-mood">${n.mood} <b>${n.extra}</b></p>
+    <dl class="nt-dl"><div><dt>Layout</dt><dd>${n.layout}</dd></div><div><dt>Best for</dt><dd>${n.best}</dd></div><div><dt>Build effort</dt><dd>${n.effort}</dd></div><div><dt>Watch out for</dt><dd>${n.risk}</dd></div></dl></div>
+    <div class="nt-side"><h3>Palette</h3><div class="nt-sw">${n.palette.map(([hex, l]) => `<div><span style="background:${hex}"></span><b>${l}</b><code>${hex}</code></div>`).join('')}</div>
+    <h3>Type</h3><p class="nt-fonts">${n.fonts.map(([f, r]) => `<span style="font-family:'${f}',sans-serif">${f} <small>${r}</small></span>`).join('')}</p></div>`;
+}
+function stopAnim(){ cancelAnimationFrame(anim); if (ro){ ro.disconnect(); ro = null; } }
+function render(){
+  stopAnim();
+  const c = CONCEPTS[state.concept];
+  stage.classList.toggle('is-phone', state.device === 'phone');
+  stage.innerHTML = `<div class="concept">${state.view === 'public' ? c.publicView() : state.loggedIn ? c.adminView() : c.loginView()}</div>`;
+  if (c.mount) c.mount();
+  document.querySelectorAll('[data-concept]').forEach(b => b.setAttribute('aria-pressed', b.dataset.concept === state.concept));
+  document.querySelectorAll('.sh-bar [data-view]').forEach(b => b.setAttribute('aria-pressed', b.dataset.view === state.view));
+  document.querySelectorAll('[data-device]').forEach(b => b.setAttribute('aria-pressed', b.dataset.device === state.device));
+  renderNotes();
+}
+const toTop = () => { stage.scrollTop = 0; const r = stage.getBoundingClientRect(); if (r.top < 0) stage.scrollIntoView({ behavior:'smooth', block:'start' }); };
+const scrollToId = id => { const el = stage.querySelector('#' + id); if (el) el.scrollIntoView({ behavior:'smooth', block:'start' }); };
+function updateLive(){
+  const box = stage.querySelector('[data-live]'), c = CONCEPTS[state.concept];
+  if (!box) return;
+  box.innerHTML = c.live ? c.live() : c.summaryBox ? c.summaryBox() : '';
+}
+function setConcept(k){
+  state.concept = k; state.errors = {}; state.success = null; state.step = 1; state.loginErr = ''; state.dpAnimated = false;
+  try { history.replaceState(null, '', '#' + k); } catch (_) {}
+  render();
+}
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const d = b.dataset;
+  if (d.concept) return setConcept(d.concept);
+  if (d.view && b.closest('.sh-bar')) { state.view = d.view; return render(); }
+  if (d.device) { state.device = d.device; return render(); }
+  if (!stage.contains(b)) return;
+  if (d.pick){
+    state.values.trip = d.pick; delete state.errors.trip; state.success = null;
+    if (state.concept === 'departures' && state.step === 1) state.step = 2;
+    render();
+    if (CONCEPTS[state.concept].scrollOnPick || state.concept === 'departures') scrollToId('form-anchor');
+    return;
+  }
+  if ('filter' in d) { state.filter = d.filter; return render(); }
+  if ('sort' in d) { state.sort = { key:d.sort, dir: state.sort.key === d.sort && state.sort.dir === 'desc' ? 'asc' : 'desc' }; return render(); }
+  if ('again' in d) { state.success = null; render(); return scrollToId('form-anchor'); }
+  if ('goadmin' in d) { state.view = 'admin'; render(); return toTop(); }
+  if (d.goview) { state.view = d.goview; render(); return toTop(); }
+  if ('logout' in d) { state.loggedIn = false; state.loginErr = ''; return render(); }
+  if ('back' in d) { state.step = Math.max(1, state.step - 1); state.errors = {}; return render(); }
+  if ('cpmode' in d) { state.cpMode = state.cpMode === 'dark' ? 'light' : 'dark'; return render(); }
+  if (d.scroll) return scrollToId(d.scroll);
+  if (d.focus) { const el = stage.querySelector('#' + d.focus); if (el) el.focus(); return; }
+  if (d.delta){
+    const inp = stage.querySelector('#f-students'), n = Math.min(500, Math.max(1, (parseInt(inp.value, 10) || 0) + Number(d.delta)));
+    inp.value = n; inp.dispatchEvent(new Event('input', { bubbles:true }));
+  }
+});
+
+stage.addEventListener('input', e => {
+  const el = e.target;
+  if (el.matches('[data-search]')){
+    state.search = el.value;
+    const box = stage.querySelector('[data-tablebox]'); if (box) box.innerHTML = CONCEPTS.campus.tableBlock();
+    return;
+  }
+  if (!el.name || !el.closest('[data-form="interest"]')) return;
+  state.values[el.name] = el.value;
+  if (state.errors[el.name] && !validate(state.values, [el.name])[el.name]){
+    delete state.errors[el.name];
+    el.setAttribute('aria-invalid', 'false'); el.classList.remove('bad');
+    const f = el.closest('.fld'); if (f) f.classList.remove('has-err');
+    stage.querySelectorAll(`[data-errfor="${el.name}"]`).forEach(n => n.remove());
+    stage.querySelectorAll(`[name="${el.name}"]`).forEach(n => n.setAttribute('aria-invalid', 'false'));
+  }
+  updateLive();
+});
+stage.addEventListener('change', e => { if (e.target.name === 'trip' && e.target.closest('[data-form="interest"]')) { state.values.trip = e.target.value; updateLive(); } });
+
+stage.addEventListener('submit', e => {
+  const f = e.target; e.preventDefault();
+  const fd = Object.fromEntries(new FormData(f));
+  if (f.dataset.form === 'login'){
+    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(fd.email || '') && String(fd.password || '').length >= 6;
+    state.loginErr = ok ? '' : 'That email and password combination is not right. Check both and try again.';
+    if (ok) state.loggedIn = true;
+    render();
+    if (!ok) stage.querySelector('#f-lpass')?.focus();
+    return;
+  }
+  const bot = fd.website; delete fd.website;
+  Object.assign(state.values, fd);
+  const step = Number(f.dataset.step || 0);
+  const fields = step ? STEP_FIELDS[step] : ALL;
+  state.errors = validate(state.values, fields);
+  if (Object.keys(state.errors).length){ render(); stage.querySelector('[aria-invalid="true"]')?.focus(); return; }
+  if (step && step < 3){ state.step = step + 1; render(); stage.querySelector('#form-anchor input:not([type=radio]):not([tabindex="-1"])')?.focus(); return; }
+  const all = validate(state.values);
+  if (Object.keys(all).length){ state.errors = all; state.step = all.trip ? 1 : (all.school || all.students) ? 2 : 3; render(); return; }
+  const btn = f.querySelector('[type="submit"]'); btn.disabled = true; btn.textContent = 'Submitting…';
+  setTimeout(() => {
+    const v = state.values;
+    const rec = { at:new Date().toISOString(), name:v.name.trim(), school:v.school.trim(), email:v.email.trim().toLowerCase(), phone:'+91' + normPhone(v.phone), trip:v.trip, students:Number(v.students), isNew:true, ref:String(1000 + Math.floor(Math.random() * 9000)) };
+    if (!bot) submissions.unshift(rec);
+    state.success = rec; state.values = {}; state.errors = {}; state.step = 1; state.burst = true;
+    render(); scrollToId('form-anchor');
+  }, 650);
+});
+
+const fromHash = location.hash.replace('#', '');
+if (CONCEPTS[fromHash]) state.concept = fromHash;
+render();
+</script>
