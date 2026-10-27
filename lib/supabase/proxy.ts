@@ -31,9 +31,11 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims() refreshes an expired session and verifies the token's signature
+  // locally against the project's public key, so it doesn't call Supabase Auth
+  // on every request the way getUser() does.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims;
 
   const isLoginPage = request.nextUrl.pathname.startsWith("/admin/login");
 
