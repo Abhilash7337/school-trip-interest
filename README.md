@@ -8,7 +8,7 @@ A small app where teachers register their school's interest in an educational tr
 
 **Teachers (`/`, no login)**
 
-- A departures-board header and three trips shown as boarding passes: Singapore STEM, Jaipur Heritage, London Universities.
+- A short intro about the organisation, then three trips shown as boarding passes: Singapore STEM, Jaipur Heritage, London Universities. Light and dark mode.
 - **View itinerary & places** opens a dialog with every place covered, a day-by-day plan, inclusions and the indicative price.
 - A three-step check-in form: **Destination → Group (school, number of students) → Contact (name, email, phone)**. Each step is validated before moving on, and the last step shows a summary with quick edit links.
 - After submitting, the teacher gets a boarding-pass confirmation with a reference code such as `STI-SIN-3F9A1C`.
@@ -16,7 +16,7 @@ A small app where teachers register their school's interest in an educational tr
 **Admin (`/admin`, Supabase email + password login)**
 
 - An "interest report": total students, the share of demand per trip, and **total students and schools per trip**.
-- **Filter by trip** with tabs that live in the URL (`/admin?trip=jaipur-heritage`), so a filtered view can be shared or refreshed.
+- **Filter by trip**: instant (filtered in the browser, no extra request), and kept in the URL (`/admin?trip=jaipur-heritage`) so a filtered view can be shared or refreshed.
 - A table of all submissions, newest first, including the same reference code the teacher saw.
 
 ## How security works
