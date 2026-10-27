@@ -1,10 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isSupabaseConfigured } from "./config";
 
 // Runs before every /admin request: refreshes the auth cookie and sends
 // signed-out visitors to the login page. The admin page re-checks the user
 // itself, so this is a fast first gate, not the only one.
 export async function updateSession(request: NextRequest) {
+  // Without Supabase there is no session to check; the pages explain what's missing.
+  if (!isSupabaseConfigured) return NextResponse.next({ request });
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(

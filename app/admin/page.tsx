@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { PlaneIcon } from "@/components/icons";
 import { getTrips } from "@/lib/data";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import { toReference, tripColor } from "@/lib/trips";
 import { signOut } from "./actions";
@@ -34,6 +35,7 @@ export default function AdminPage({ searchParams }: PageProps<"/admin">) {
 }
 
 async function Report({ searchParams }: { searchParams: PageProps<"/admin">["searchParams"] }) {
+  if (!isSupabaseConfigured) redirect("/admin/login");
   const supabase = await createClient();
 
   // proxy.ts already redirects signed-out visitors; this is the real check.

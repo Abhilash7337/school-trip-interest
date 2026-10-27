@@ -1,5 +1,6 @@
 "use server";
 
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import { toReference } from "@/lib/trips";
 import { firstErrors, interestSchema, type FieldErrors, type InterestValues } from "@/lib/validation";
@@ -30,6 +31,10 @@ export async function submitInterest(values: InterestValues & { website?: string
     return { ok: false, fieldErrors: firstErrors(parsed.error) };
   }
   const data = parsed.data;
+
+  if (!isSupabaseConfigured) {
+    return { ok: false, message: "Registrations aren't open yet. Please try again later." };
+  }
 
   const supabase = await createClient();
 
