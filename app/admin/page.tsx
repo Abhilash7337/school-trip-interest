@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { PlaneIcon } from "@/components/icons";
-import { getTrips } from "@/lib/data";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import { toReference, tripColor } from "@/lib/trips";
@@ -44,30 +44,31 @@ async function Report({ searchParams }: { searchParams: PageProps<"/admin">["sea
   } = await supabase.auth.getUser();
   if (!user) redirect("/admin/login");
 
-  const { data: adminRow } = await supabase.from("admin_users").select("user_id").eq("user_id", user.id).maybeSingle();
+  // The admin check and the per-trip totals don't depend on each other, so fetch them together.
+  // (If the user isn't an admin, RLS makes the totals view return zeros, so nothing leaks.)
+  const [{ data: adminRow }, { data: totalsData }] = await Promise.all([
+    supabase.from("admin_users").select("user_id").eq("user_id", user.id).maybeSingle(),
+    supabase.from("trip_student_totals").select("trip_id, title, code, submission_count, total_students").order("sort_order"),
+  ]);
   if (!adminRow) return <NoAccess email={user.email ?? "this account"} />;
 
+  const totals = (totalsData ?? []) as TripTotal[];
   const { trip: tripParam } = await searchParams;
-  const trips = (await getTrips()) ?? [];
-  const activeTrip = trips.find((t) => t.id === tripParam);
+  // Only filter by a trip that actually exists; anything else shows all trips.
+  const activeTrip = totals.find((t) => t.trip_id === tripParam);
 
   let rowsQuery = supabase
     .from("interest_submissions")
     .select("id, created_at, teacher_name, school_name, email, phone, trip_id, student_count")
     .order("created_at", { ascending: false })
     .limit(500);
-  if (activeTrip) rowsQuery = rowsQuery.eq("trip_id", activeTrip.id);
+  if (activeTrip) rowsQuery = rowsQuery.eq("trip_id", activeTrip.trip_id);
+  const { data: rowsData, error: rowsError } = await rowsQuery;
 
-  const [{ data: totalsData }, { data: rowsData, error: rowsError }] = await Promise.all([
-    supabase.from("trip_student_totals").select("trip_id, title, code, submission_count, total_students").order("sort_order"),
-    rowsQuery,
-  ]);
-
-  const totals = (totalsData ?? []) as TripTotal[];
   const rows = (rowsData ?? []) as Submission[];
   const grandStudents = totals.reduce((sum, t) => sum + t.total_students, 0);
   const grandSubmissions = totals.reduce((sum, t) => sum + t.submission_count, 0);
-  const tripById = new Map(trips.map((t) => [t.id, t]));
+  const tripById = new Map(totals.map((t) => [t.trip_id, t]));
   const shownStudents = rows.reduce((sum, r) => sum + r.student_count, 0);
   const percent = (n: number) => (grandStudents ? Math.round((n / grandStudents) * 100) : 0);
 
@@ -114,7 +115,7 @@ async function Report({ searchParams }: { searchParams: PageProps<"/admin">["sea
           <nav aria-label="Filter by trip" className="flex flex-wrap gap-x-6 gap-y-1 border-b border-rule">
             <FilterLink href="/admin" active={!activeTrip} label="All trips" count={grandSubmissions} />
             {totals.map((t) => (
-              <FilterLink key={t.trip_id} href={`/admin?trip=${t.trip_id}`} active={activeTrip?.id === t.trip_id} label={t.title} count={t.submission_count} />
+              <FilterLink key={t.trip_id} href={`/admin?trip=${t.trip_id}`} active={activeTrip?.trip_id === t.trip_id} label={t.title} count={t.submission_count} />
             ))}
           </nav>
 
@@ -182,11 +183,12 @@ function AdminHeader({ email }: { email: string }) {
         </Link>
         <div className="flex items-center gap-1 text-sm">
           <span className="mr-2 hidden text-mute md:inline">{email}</span>
+          <ThemeToggle />
           <Link href="/" className="rounded-lg px-3 py-2 font-semibold hover:bg-mist">
             Public site
           </Link>
           <form action={signOut}>
-            <button type="submit" className="rounded-lg border border-ink px-3 py-2 font-semibold hover:bg-ink hover:text-white">
+            <button type="submit" className="rounded-lg border border-ink px-3 py-2 font-semibold hover:bg-ink hover:text-paper">
               Log out
             </button>
           </form>
@@ -198,8 +200,10 @@ function AdminHeader({ email }: { email: string }) {
 
 function FilterLink({ href, active, label, count }: { href: string; active: boolean; label: string; count: number }) {
   return (
+    // No prefetch: each filter view is a fresh database query, so only load it when clicked.
     <Link
       href={href}
+      prefetch={false}
       aria-current={active ? "page" : undefined}
       className={`-mb-px border-b-2 py-2.5 text-sm font-bold ${active ? "border-amber text-ink" : "border-transparent text-mute hover:text-ink"}`}
     >
@@ -215,7 +219,7 @@ function NoAccess({ email }: { email: string }) {
         <h1 className="font-serif text-3xl">No admin access</h1>
         <p className="mt-3 text-mute">{email} is signed in but isn&apos;t on the admin list. Ask the team to add you, or sign in with a different account.</p>
         <form action={signOut} className="mt-6">
-          <button type="submit" className="rounded-lg bg-ink px-4 py-2.5 font-bold text-white">
+          <button type="submit" className="rounded-lg bg-primary px-4 py-2.5 font-bold text-on-primary">
             Sign out
           </button>
         </form>

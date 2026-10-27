@@ -23,6 +23,18 @@ export function TripDetailsDialog({ trip, selected, onClose, onSelect }: Props) 
     if (!trip && dialog.open) dialog.close();
   }, [trip]);
 
+  // Keep the page behind the dialog from scrolling while it's open.
+  const isOpen = trip !== null;
+  useEffect(() => {
+    if (!isOpen) return;
+    const root = document.documentElement;
+    const previous = root.style.overflow;
+    root.style.overflow = "hidden";
+    return () => {
+      root.style.overflow = previous;
+    };
+  }, [isOpen]);
+
   const color = trip ? tripColor(trip.code) : undefined;
 
   return (
@@ -61,7 +73,7 @@ export function TripDetailsDialog({ trip, selected, onClose, onSelect }: Props) 
             </p>
           </header>
 
-          <div className="grid gap-6 overflow-y-auto px-5 py-6 sm:px-7">
+          <div className="grid gap-6 overflow-y-auto overscroll-contain px-5 py-6 sm:px-7">
             <p className="text-[0.95rem] leading-relaxed text-mute">{trip.summary}</p>
 
             <section aria-labelledby="places-h">
@@ -129,7 +141,7 @@ export function TripDetailsDialog({ trip, selected, onClose, onSelect }: Props) 
               <button
                 type="button"
                 onClick={() => onSelect(trip.id)}
-                className="rounded-[10px] bg-primary px-4 py-2.5 text-sm font-bold text-white hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="rounded-[10px] bg-primary px-4 py-2.5 text-sm font-bold text-on-primary hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 {selected ? "Continue with this trip" : "Select this trip"}
               </button>

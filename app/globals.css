@@ -16,6 +16,32 @@
   --color-rule: #e1e6ec;
   --color-rule-strong: #c9d3de;
   --color-alert: #c2362f;
+  --color-on-primary: #ffffff;
+  --color-night: #0f1b2a;
+}
+
+/* `dark:` utilities follow the data-theme attribute set by the theme toggle. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Dark mode: same tokens, night values. Components only use tokens, so they
+   switch automatically. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-ink: #e6edf3;
+  --color-ink-2: #c9d4de;
+  --color-primary: #2bb3a6;
+  --color-primary-hover: #45c7ba;
+  --color-primary-soft: #11302d;
+  --color-amber: #f0b43a;
+  --color-amber-soft: #3a2e12;
+  --color-mist: #0c1218;
+  --color-paper: #121b24;
+  --color-mute: #8b9aa9;
+  --color-rule: #223140;
+  --color-rule-strong: #33475a;
+  --color-alert: #ff7b72;
+  --color-on-primary: #04201d;
+  --color-night: #070d14;
 }
 
 @theme inline {
@@ -49,26 +75,39 @@ dialog::backdrop {
   backdrop-filter: blur(3px);
 }
 
-/* Boarding-pass stub: dashed tear line with two punched notches. */
+/* Boarding-pass stub: dashed tear line with two punched notches.
+   Phones: the stub sits under the ticket. From md up: to its right. */
 .pass-stub {
   position: relative;
-  border-left: 2px dashed var(--color-rule-strong);
+  border-top: 2px dashed var(--color-rule-strong);
 }
 .pass-stub::before,
 .pass-stub::after {
   content: "";
   position: absolute;
-  left: -12px;
+  top: -12px;
   width: 22px;
   height: 22px;
   border-radius: 9999px;
   background: var(--color-mist);
 }
 .pass-stub::before {
-  top: -12px;
+  left: -12px;
 }
 .pass-stub::after {
-  bottom: -12px;
+  right: -12px;
+}
+@media (min-width: 48rem) {
+  .pass-stub {
+    border-top: 0;
+    border-left: 2px dashed var(--color-rule-strong);
+  }
+  .pass-stub::after {
+    top: auto;
+    bottom: -12px;
+    left: -12px;
+    right: auto;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

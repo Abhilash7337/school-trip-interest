@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { TripPlanner } from "@/components/trip-planner";
 import { getTrips } from "@/lib/data";
 
@@ -9,7 +10,7 @@ export default function Home() {
       <header className="sticky top-0 z-20 border-b border-rule bg-paper/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-5 px-4 sm:px-7">
           <Link href="/" className="flex items-center gap-2.5 font-extrabold">
-            <span className="grid size-8 place-items-center rounded-[9px] bg-primary text-xs font-extrabold text-white">ST</span>
+            <span className="grid size-8 place-items-center rounded-[9px] bg-primary text-xs font-extrabold text-on-primary">ST</span>
             School Trips
           </Link>
           <nav aria-label="Sections" className="hidden gap-1 text-sm font-semibold text-mute sm:flex">
@@ -20,7 +21,11 @@ export default function Home() {
               Register
             </a>
           </nav>
-          <Link href="/admin" className="ml-auto rounded-[10px] border border-rule px-3.5 py-2 text-sm font-bold hover:border-primary">
+          <div className="ml-auto">
+            <ThemeToggle />
+          </div>
+          {/* No prefetch: visitors rarely open admin, and prefetching it would run an auth check on every page view. */}
+          <Link href="/admin" prefetch={false} className="rounded-[10px] border border-rule px-3.5 py-2 text-sm font-bold hover:border-primary">
             Admin
           </Link>
         </div>

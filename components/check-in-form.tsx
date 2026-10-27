@@ -18,6 +18,7 @@ type Props = {
   pending: boolean;
   formMessage: string | null;
   onChange: (field: InterestField, value: string) => void;
+  onBlurField: (field: InterestField) => void;
   onBack: () => void;
   onNext: () => void;
   onEdit: (step: Step) => void;
@@ -26,7 +27,7 @@ type Props = {
 
 // Three-step check-in: Destination → Group → Contact. Each step is checked in
 // the browser before moving on; the Server Action re-checks everything.
-export function CheckInForm({ trips, step, values, errors, pending, formMessage, onChange, onBack, onNext, onEdit, onShowDetails }: Props) {
+export function CheckInForm({ trips, step, values, errors, pending, formMessage, onChange, onBlurField, onBack, onNext, onEdit, onShowDetails }: Props) {
   const stepRef = useRef<HTMLDivElement>(null);
   const firstRender = useRef(true);
 
@@ -41,11 +42,22 @@ export function CheckInForm({ trips, step, values, errors, pending, formMessage,
   }, [step]);
 
   const trip = trips.find((t) => t.id === values.trip_id);
-  const bind = (field: InterestField) => ({
+  // Wires an input to state. `clean` filters keystrokes (e.g. digits only),
+  // and leaving the field checks it straight away.
+  const bind = (field: InterestField, clean: (raw: string) => string = (raw) => raw) => ({
     name: field,
     value: values[field],
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange(field, e.target.value),
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange(field, clean(e.target.value)),
+    onBlur: () => onBlurField(field),
   });
+  const digitsOnly = (max: number) => (raw: string) => raw.replace(/\D/g, "").slice(0, max);
+  // Digits only; a pasted "+91 98490 12345" or "098490 12345" keeps the 10-digit number.
+  const phoneDigits = (raw: string) => {
+    let digits = raw.replace(/\D/g, "");
+    if (digits.length > 10 && digits.startsWith("91")) digits = digits.slice(2);
+    if (digits.length > 10 && digits.startsWith("0")) digits = digits.slice(1);
+    return digits.slice(0, 10);
+  };
 
   const changeStudents = (delta: number) => {
     const current = parseInt(values.student_count, 10) || 0;
@@ -136,7 +148,7 @@ export function CheckInForm({ trips, step, values, errors, pending, formMessage,
           <>
             <Field id="school_name" label="School name" error={errors.school_name}>
               {(aria) => (
-                <input {...aria} {...bind("school_name")} type="text" autoComplete="organization" placeholder="e.g. Banyan Grove Public School" className={inputClass} />
+                <input {...aria} {...bind("school_name")} type="text" autoComplete="organization" maxLength={150} placeholder="e.g. Banyan Grove Public School" className={inputClass} />
               )}
             </Field>
             <Field id="student_count" label="Number of students" error={errors.student_count} hint="An estimate is fine. Between 1 and 500.">
@@ -145,7 +157,7 @@ export function CheckInForm({ trips, step, values, errors, pending, formMessage,
                   <button type="button" onClick={() => changeStudents(-1)} aria-label="One fewer student" className="rounded-[10px] border border-rule-strong text-xl font-bold hover:border-primary hover:text-primary">
                     −
                   </button>
-                  <input {...aria} {...bind("student_count")} type="number" inputMode="numeric" min={1} max={500} step={1} placeholder="40" className={`${inputClass} text-center font-semibold`} />
+                  <input {...aria} {...bind("student_count", digitsOnly(3))} type="text" inputMode="numeric" autoComplete="off" placeholder="40" className={`${inputClass} text-center font-semibold`} />
                   <button type="button" onClick={() => changeStudents(1)} aria-label="One more student" className="rounded-[10px] border border-rule-strong text-xl font-bold hover:border-primary hover:text-primary">
                     +
                   </button>
@@ -158,14 +170,39 @@ export function CheckInForm({ trips, step, values, errors, pending, formMessage,
         {step === 3 && (
           <>
             <Field id="teacher_name" label="Your name" error={errors.teacher_name}>
-              {(aria) => <input {...aria} {...bind("teacher_name")} type="text" autoComplete="name" placeholder="e.g. Priya Raman" className={inputClass} />}
+              {(aria) => <input {...aria} {...bind("teacher_name")} type="text" autoComplete="name" maxLength={100} placeholder="e.g. Priya Raman" className={inputClass} />}
             </Field>
             <div className="grid gap-5 sm:grid-cols-2">
               <Field id="email" label="Email" error={errors.email}>
-                {(aria) => <input {...aria} {...bind("email")} type="email" autoComplete="email" placeholder="name@school.edu.in" className={inputClass} />}
+                {(aria) => (
+                  <input
+                    {...aria}
+                    {...bind("email", (raw) => raw.replace(/\s/g, ""))}
+                    type="email"
+                    autoComplete="email"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    maxLength={254}
+                    placeholder="name@school.edu.in"
+                    className={inputClass}
+                  />
+                )}
               </Field>
-              <Field id="phone" label="Mobile number" error={errors.phone} hint="10-digit Indian mobile number.">
-                {(aria) => <input {...aria} {...bind("phone")} type="tel" inputMode="tel" autoComplete="tel" placeholder="98490 12345" className={inputClass} />}
+              <Field id="phone" label="Mobile number" error={errors.phone} hint="10 digits, starting with 6, 7, 8 or 9.">
+                {(aria) => (
+                  <div className="flex rounded-[10px] focus-within:ring-3 focus-within:ring-primary/20">
+                    <span className="grid place-items-center rounded-l-[10px] border border-r-0 border-rule-strong bg-mist px-3 text-sm font-semibold text-mute">+91</span>
+                    <input
+                      {...aria}
+                      {...bind("phone", phoneDigits)}
+                      type="tel"
+                      inputMode="numeric"
+                      autoComplete="tel-national"
+                      placeholder="9849012345"
+                      className={`${inputClass} rounded-l-none focus:ring-0`}
+                    />
+                  </div>
+                )}
               </Field>
             </div>
 
@@ -194,7 +231,7 @@ export function CheckInForm({ trips, step, values, errors, pending, formMessage,
       </div>
 
       {formMessage && (
-        <p id="form-message" role="alert" className="rounded-lg bg-[#fdecea] px-4 py-3 text-sm font-semibold text-alert">
+        <p id="form-message" role="alert" className="rounded-lg bg-alert/10 px-4 py-3 text-sm font-semibold text-alert">
           {formMessage}
         </p>
       )}
@@ -208,7 +245,7 @@ export function CheckInForm({ trips, step, values, errors, pending, formMessage,
         <button
           type="submit"
           disabled={pending}
-          className="flex-1 rounded-[10px] bg-primary px-6 py-3 text-base font-bold text-white transition-colors hover:bg-primary-hover disabled:cursor-wait disabled:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="flex-1 rounded-[10px] bg-primary px-6 py-3 text-base font-bold text-on-primary transition-colors hover:bg-primary-hover disabled:cursor-wait disabled:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           {step < 3 ? "Continue →" : pending ? "Registering…" : "Register interest"}
         </button>

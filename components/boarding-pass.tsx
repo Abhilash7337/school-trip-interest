@@ -1,4 +1,5 @@
 import { formatInr, shortDuration, tripColor, type Trip } from "@/lib/trips";
+import { DestinationArt } from "./destination-art";
 import { PinIcon, PlaneIcon } from "./icons";
 
 type Props = {
@@ -8,10 +9,10 @@ type Props = {
   onShowDetails: () => void;
 };
 
-const PREVIEW_PLACES = 3;
+const PREVIEW_PLACES = 4;
 
-// One trip shown as a boarding pass: route, key facts, a preview of places,
-// and a tear-off stub with the price and the Select button.
+// One trip as a full-width boarding pass: a picture panel of the destination,
+// the route and key facts, and a tear-off stub with the price and Select.
 export function BoardingPass({ trip, selected, onSelect, onShowDetails }: Props) {
   const city = trip.destination.split(",")[0];
   const morePlaces = trip.places.length - PREVIEW_PLACES;
@@ -20,49 +21,64 @@ export function BoardingPass({ trip, selected, onSelect, onShowDetails }: Props)
   return (
     <article
       aria-label={trip.title}
-      className={`grid snap-start grid-cols-[minmax(0,1fr)_112px] rounded-2xl border bg-paper transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-[0_16px_30px_-20px_rgba(15,27,42,0.35)] ${
+      className={`grid rounded-2xl border bg-paper transition-shadow duration-200 hover:shadow-[0_18px_34px_-22px_rgba(15,27,42,0.35)] md:grid-cols-[220px_minmax(0,1fr)_170px] ${
         selected ? "border-primary ring-2 ring-primary" : "border-rule"
       }`}
     >
-      <div className="grid min-w-0 content-start gap-3.5 p-4 sm:p-5">
-        <div className="flex items-center justify-between gap-2">
+      {/* Destination panel */}
+      <div
+        className="relative flex min-h-36 flex-col justify-between overflow-hidden rounded-t-2xl p-5 text-white md:rounded-l-2xl md:rounded-tr-none"
+        style={{ background: `linear-gradient(160deg, ${color}, color-mix(in srgb, ${color} 50%, #000))` }}
+      >
+        <div className="relative z-10">
+          <span className="rounded-full bg-white/20 px-2.5 py-1 text-[0.7rem] font-bold">{trip.season}</span>
+          <p className="mt-3 text-2xl font-extrabold leading-tight">{city}</p>
+          <p className="text-xs font-semibold text-white/80">{trip.duration}</p>
+        </div>
+        <DestinationArt code={trip.code} className="pointer-events-none absolute inset-x-0 bottom-0 h-[62%] w-full text-white/30" />
+      </div>
+
+      {/* Ticket body */}
+      <div
+        className="grid min-w-0 content-start gap-4 p-5 sm:p-6"
+        style={{ background: `linear-gradient(120deg, color-mix(in srgb, ${color} 6%, transparent), transparent 55%)` }}
+      >
+        <div className="flex items-center gap-4">
           <div>
             <small className="block font-mono text-[0.62rem] uppercase tracking-[0.12em] text-mute">From</small>
-            <b className="text-[1.7rem] font-extrabold leading-none tracking-tight">HYD</b>
-            <span className="block text-xs text-mute">Hyderabad</span>
+            <b className="text-2xl font-extrabold leading-none tracking-tight">HYD</b>
           </div>
-          <div className="relative h-0.5 flex-1 bg-[repeating-linear-gradient(90deg,var(--color-rule-strong)_0_6px,transparent_6px_11px)]">
-            <PlaneIcon className="absolute left-1/2 top-1/2 size-5 -translate-x-1/2 -translate-y-1/2 rotate-90 bg-paper px-0.5" />
+          <div className="relative h-0.5 max-w-48 flex-1 bg-[repeating-linear-gradient(90deg,var(--color-rule-strong)_0_6px,transparent_6px_11px)]">
+            <PlaneIcon className="absolute left-1/2 top-1/2 size-5 -translate-x-1/2 -translate-y-1/2 rotate-90" />
           </div>
-          <div className="text-right">
+          <div>
             <small className="block font-mono text-[0.62rem] uppercase tracking-[0.12em] text-mute">To</small>
-            <b className="text-[1.7rem] font-extrabold leading-none tracking-tight" style={{ color }}>
+            <b className="text-2xl font-extrabold leading-none tracking-tight" style={{ color }}>
               {trip.code}
             </b>
-            <span className="block text-xs text-mute">{city}</span>
           </div>
+          <h3 className="ml-2 hidden text-xl font-bold leading-snug lg:block">{trip.title}</h3>
         </div>
+        <h3 className="text-xl font-bold leading-snug lg:hidden">{trip.title}</h3>
 
-        <h3 className="text-lg font-bold leading-snug">{trip.title}</h3>
-
-        <dl className="grid grid-cols-3 gap-2 rounded-xl bg-mist px-3 py-2.5">
+        <dl className="flex flex-wrap gap-x-8 gap-y-2">
           {[
             ["Duration", shortDuration(trip.duration)],
             ["Grades", trip.grades.replace("Grades ", "")],
-            ["Departs", trip.season.replace("December", "Dec")],
+            ["Departs", trip.season],
           ].map(([label, value]) => (
             <div key={label}>
-              <dt className="text-[0.68rem] font-semibold text-mute">{label}</dt>
+              <dt className="text-[0.7rem] font-semibold text-mute">{label}</dt>
               <dd className="text-sm font-bold">{value}</dd>
             </div>
           ))}
         </dl>
 
-        <p className="text-sm text-mute">{trip.summary}</p>
+        <p className="max-w-[70ch] text-sm text-mute">{trip.summary}</p>
 
         <ul className="flex flex-wrap gap-1.5" aria-label="Places covered">
           {trip.places.slice(0, PREVIEW_PLACES).map((place) => (
-            <li key={place} className="flex items-center gap-1 rounded-full border border-rule px-2.5 py-1 text-xs font-semibold">
+            <li key={place} className="flex items-center gap-1 rounded-full border border-rule bg-paper px-2.5 py-1 text-xs font-semibold">
               <PinIcon className="size-3.5 text-mute" />
               {place}
             </li>
@@ -73,25 +89,27 @@ export function BoardingPass({ trip, selected, onSelect, onShowDetails }: Props)
         <button
           type="button"
           onClick={onShowDetails}
-          className="justify-self-start rounded-md text-sm font-bold text-primary hover:text-primary-hover hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="justify-self-start rounded-md text-sm font-bold text-primary underline-offset-4 hover:text-primary-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           View itinerary &amp; places →
         </button>
       </div>
 
-      <div className="pass-stub grid content-center justify-items-center gap-1 px-2 py-4 text-center">
-        <small className="text-[0.68rem] font-semibold text-mute">From</small>
-        <b className="text-base leading-tight">{formatInr(trip.price_from_inr)}</b>
-        <small className="text-[0.65rem] text-mute">per student</small>
+      {/* Tear-off stub */}
+      <div className="pass-stub flex items-center justify-between gap-3 px-5 py-4 md:grid md:content-center md:justify-items-center md:text-center">
+        <div>
+          <small className="block text-[0.7rem] font-semibold text-mute">From, per student</small>
+          <b className="text-lg leading-tight">{formatInr(trip.price_from_inr)}</b>
+        </div>
         <button
           type="button"
           onClick={onSelect}
           aria-pressed={selected}
-          className={`mt-2 rounded-[10px] px-3.5 py-2 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-            selected ? "bg-primary text-white" : "border border-rule-strong bg-paper hover:border-primary hover:text-primary"
+          className={`rounded-[10px] px-5 py-2.5 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:mt-2 ${
+            selected ? "bg-primary text-on-primary" : "border border-rule-strong bg-paper hover:border-primary hover:text-primary"
           }`}
         >
-          {selected ? "Selected ✓" : "Select"}
+          {selected ? "Selected ✓" : "Select trip"}
         </button>
       </div>
     </article>

@@ -18,9 +18,13 @@ export function LoginForm() {
         e.preventDefault();
         setError(null);
         startTransition(async () => {
-          // On success the action redirects to /admin, so we only handle errors here.
           const result = await signIn(email, password);
-          if (result?.error) setError(result.error);
+          if (result.error) {
+            setError(result.error);
+            return;
+          }
+          // Full page load so the admin page is rendered with the new session cookie.
+          window.location.assign("/admin");
         });
       }}
     >
@@ -37,7 +41,7 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-[10px] bg-primary px-5 py-3 font-bold text-white hover:bg-primary-hover disabled:cursor-wait disabled:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className="rounded-[10px] bg-primary px-5 py-3 font-bold text-on-primary hover:bg-primary-hover disabled:cursor-wait disabled:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
         {pending ? "Signing in…" : "Sign in"}
       </button>

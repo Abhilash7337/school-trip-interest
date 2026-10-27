@@ -20,17 +20,20 @@ export const interestSchema = z.object({
     .string()
     .trim()
     .min(2, "Enter your school's name.")
-    .max(150, "School name must be 150 characters or fewer."),
-  student_count: z.coerce
-    .number({ error: STUDENTS_MESSAGE })
-    .int(STUDENTS_MESSAGE)
-    .min(1, STUDENTS_MESSAGE)
-    .max(500, STUDENTS_MESSAGE),
+    .max(150, "School name must be 150 characters or fewer.")
+    .regex(/^[\p{L}\p{N} .,'&()/-]+$/u, "Use letters, numbers and simple punctuation only."),
+  student_count: z
+    .string()
+    .trim()
+    .regex(/^\d{1,3}$/, STUDENTS_MESSAGE)
+    .transform(Number)
+    .pipe(z.number().int(STUDENTS_MESSAGE).min(1, STUDENTS_MESSAGE).max(500, STUDENTS_MESSAGE)),
   teacher_name: z
     .string()
     .trim()
     .min(2, "Enter your full name.")
-    .max(100, "Name must be 100 characters or fewer."),
+    .max(100, "Name must be 100 characters or fewer.")
+    .regex(/^[\p{L} .'-]+$/u, "Use letters only. Spaces, dots, apostrophes and hyphens are fine."),
   email: z
     .string()
     .trim()

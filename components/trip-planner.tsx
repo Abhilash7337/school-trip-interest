@@ -40,12 +40,14 @@ export function TripPlanner({ trips }: { trips: Trip[] }) {
 
   const scrollToCheckIn = () => checkInRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  // After a failed check, move focus to the first field that needs fixing.
+  // After a failed Continue/Register, move focus to the first field that needs
+  // fixing. Keyed on attempts (not on errors) so fixing one field while typing
+  // doesn't yank focus to the next invalid one.
+  const [failedAttempts, setFailedAttempts] = useState(0);
   useEffect(() => {
-    if (Object.keys(errors).length) {
-      checkInRef.current?.querySelector<HTMLElement>('[aria-invalid="true"], [data-invalid="true"]')?.focus();
-    }
-  }, [errors]);
+    if (failedAttempts === 0) return;
+    checkInRef.current?.querySelector<HTMLElement>('[aria-invalid="true"], [data-invalid="true"]')?.focus();
+  }, [failedAttempts]);
 
   function change(field: InterestField, value: string) {
     const next = { ...values, [field]: value };
@@ -54,6 +56,13 @@ export function TripPlanner({ trips }: { trips: Trip[] }) {
     if (errors[field] && !errorsFor(next, [field])[field]) {
       setErrors((prev) => without(prev, field));
     }
+  }
+
+  // Check a field as soon as the user leaves it (empty fields wait for Continue).
+  function checkField(field: InterestField) {
+    if (!values[field].trim()) return;
+    const message = errorsFor(values, [field])[field];
+    setErrors((prev) => (message ? { ...prev, [field]: message } : without(prev, field)));
   }
 
   function selectTrip(tripId: string) {
@@ -69,7 +78,10 @@ export function TripPlanner({ trips }: { trips: Trip[] }) {
     const stepErrors = errorsFor(values, STEP_FIELDS[step]);
     setErrors(stepErrors);
     setFormMessage(null);
-    if (Object.keys(stepErrors).length) return;
+    if (Object.keys(stepErrors).length) {
+      setFailedAttempts((n) => n + 1);
+      return;
+    }
     if (step < 3) {
       setStep((step + 1) as Step);
       return;
@@ -91,6 +103,7 @@ export function TripPlanner({ trips }: { trips: Trip[] }) {
         setErrors(result.fieldErrors);
         const firstBad = INTEREST_FIELDS.find((f) => result.fieldErrors?.[f]);
         if (firstBad) setStep(stepOf(firstBad));
+        setFailedAttempts((n) => n + 1);
       }
     });
   }
@@ -101,8 +114,8 @@ export function TripPlanner({ trips }: { trips: Trip[] }) {
 
   return (
     <>
-      <section className="mx-auto grid w-full max-w-6xl items-start gap-10 px-4 pb-14 pt-10 sm:px-7 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14 lg:pt-16">
-        <div className="lg:pt-6">
+      <section className="mx-auto grid w-full max-w-6xl items-center gap-10 px-4 pb-14 pt-10 sm:px-7 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-14 lg:pt-16">
+        <div>
           <span className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-3 py-1.5 text-xs font-bold text-primary">
             <i className="size-1.5 rounded-full bg-primary ring-4 ring-primary/25" aria-hidden="true" />
             2027 season · registrations open
@@ -110,11 +123,20 @@ export function TripPlanner({ trips }: { trips: Trip[] }) {
           <h1 className="mt-5 text-balance text-4xl font-extrabold leading-[1.06] tracking-tight sm:text-5xl">
             Educational trips your students will remember
           </h1>
-          <p className="mt-4 max-w-[52ch] text-lg text-mute">
-            Pick a destination, check the day-by-day plan, and tell us roughly how many students might join. We reply within two working days with
-            dates, costs and next steps.
+          <p className="mt-4 max-w-[54ch] text-lg text-mute">
+            School Trips plans learning journeys for school groups from Hyderabad. We work with teachers to turn a syllabus topic into a trip: labs
+            in Singapore, observatories in Jaipur, lecture halls in London. We handle travel, stays, meals, guides and safety, so teachers can focus
+            on the students.
           </p>
-          <ul className="mt-8 flex flex-wrap gap-x-8 gap-y-4">
+          <div className="mt-7 flex flex-wrap gap-3">
+            <a href="#trips" className="rounded-[10px] bg-primary px-5 py-3 font-bold text-on-primary hover:bg-primary-hover">
+              Explore the trips
+            </a>
+            <a href="#register" className="rounded-[10px] border border-rule-strong bg-paper px-5 py-3 font-bold hover:border-primary hover:text-primary">
+              Register interest
+            </a>
+          </div>
+          <ul className="mt-9 flex flex-wrap gap-x-8 gap-y-4">
             {[
               [String(trips.length), "curated trips"],
               [gradeRange, "grades covered"],
@@ -128,10 +150,56 @@ export function TripPlanner({ trips }: { trips: Trip[] }) {
           </ul>
         </div>
 
+        <aside aria-labelledby="why-h" className="rounded-2xl border border-rule bg-paper p-6 sm:p-7">
+          <h2 id="why-h" className="text-lg font-extrabold">
+            Why schools travel with us
+          </h2>
+          <ul className="mt-5 grid gap-5">
+            {[
+              ["Linked to what they study", "Every day has a learning goal tied to science, history or university planning, not just sightseeing."],
+              ["Safety first", "One teacher escort for every 10 students, vetted hotels, travel insurance and a 24/7 trip lead."],
+              ["One clear price", "Flights or train, stays, meals, entry tickets and workshops are included. No surprise add-ons for parents."],
+              ["Planned with you", "Tell us your group size and dates. We shape the itinerary around your school calendar."],
+            ].map(([title, text]) => (
+              <li key={title} className="grid grid-cols-[auto_minmax(0,1fr)] gap-3">
+                <span className="mt-0.5 grid size-7 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true">
+                  ✓
+                </span>
+                <div>
+                  <h3 className="font-bold">{title}</h3>
+                  <p className="mt-0.5 text-sm text-mute">{text}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      </section>
+
+      <section id="trips" aria-labelledby="destinations-h" className="mx-auto w-full max-w-6xl scroll-mt-20 px-4 pb-14 sm:px-7">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-2">
+          <h2 id="destinations-h" className="text-2xl font-extrabold tracking-tight">
+            Choose your destination
+          </h2>
+          <p className="text-sm text-mute">Selecting a pass fills in the form below. Open one to see the full itinerary.</p>
+        </div>
+        <div className="grid gap-5">
+          {trips.map((trip) => (
+            <BoardingPass
+              key={trip.id}
+              trip={trip}
+              selected={values.trip_id === trip.id}
+              onSelect={() => selectTrip(trip.id)}
+              onShowDetails={() => setDetailsId(trip.id)}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section aria-label="Register your interest" className="mx-auto w-full max-w-3xl px-4 pb-20 sm:px-7">
         <div
           ref={checkInRef}
           id="register"
-          className="scroll-mt-24 rounded-2xl border border-rule bg-paper p-5 shadow-[0_20px_40px_-24px_rgba(15,27,42,0.25)] sm:p-7"
+          className="scroll-mt-24 rounded-2xl border border-rule bg-paper p-5 shadow-[0_20px_40px_-24px_rgba(15,27,42,0.25)] sm:p-8"
         >
           {confirmation ? (
             <ConfirmationPass confirmation={confirmation} onRegisterAnother={() => setConfirmation(null)} />
@@ -144,6 +212,7 @@ export function TripPlanner({ trips }: { trips: Trip[] }) {
               pending={pending}
               formMessage={formMessage}
               onChange={change}
+              onBlurField={checkField}
               onBack={() => {
                 setErrors({});
                 setStep((s) => Math.max(1, s - 1) as Step);
@@ -156,26 +225,6 @@ export function TripPlanner({ trips }: { trips: Trip[] }) {
               onShowDetails={setDetailsId}
             />
           )}
-        </div>
-      </section>
-
-      <section id="trips" aria-labelledby="destinations-h" className="mx-auto w-full max-w-6xl scroll-mt-20 px-4 pb-16 sm:px-7">
-        <div className="mb-5 flex flex-wrap items-end justify-between gap-2">
-          <h2 id="destinations-h" className="text-2xl font-extrabold tracking-tight">
-            Choose your destination
-          </h2>
-          <p className="text-sm text-mute">Selecting a pass fills in the form. Open one to see the full itinerary.</p>
-        </div>
-        <div className="-mx-4 grid snap-x snap-mandatory auto-cols-[88%] grid-flow-col gap-5 overflow-x-auto px-4 pb-4 pt-1 sm:auto-cols-[60%] lg:mx-0 lg:grid-flow-row lg:grid-cols-3 lg:overflow-visible lg:px-0">
-          {trips.map((trip) => (
-            <BoardingPass
-              key={trip.id}
-              trip={trip}
-              selected={values.trip_id === trip.id}
-              onSelect={() => selectTrip(trip.id)}
-              onShowDetails={() => setDetailsId(trip.id)}
-            />
-          ))}
         </div>
       </section>
 
