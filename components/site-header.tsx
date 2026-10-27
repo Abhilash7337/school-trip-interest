@@ -35,4 +35,4 @@ export function SiteFooter() {
 
 // Shared look for the small header buttons/links.
 export const headerButtonClass =
-  "rounded-[10px] border border-rule px-3.5 py-2 text-sm font-bold hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+  "inline-flex h-9 items-center rounded-[10px] border border-rule px-3.5 text-sm font-bold hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
