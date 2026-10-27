@@ -98,7 +98,7 @@ supabase/schema.sql      tables, constraints, RLS, view, seed data
 
 ## AI tools used
 
-- **Claude Code (Claude):** I used it to turn the brief into a plan and feature doc, and to prototype five design directions as an interactive mock-up. I picked the final design from those: Departures-style passes and check-in flow for teachers, and an editorial report for admin. It also generated most of the first draft of the code, the SQL schema and this README, and drove the Supabase dashboard in my browser to run the schema.
+- **Claude Code (Claude):** I used it to turn the brief into a plan and feature doc, and to prototype five design directions as an interactive mock-up. I picked the final design by mixing those: a clean "Campus" layout with light/dark mode, boarding-pass trip cards and a three-step check-in for teachers, and a report-style admin page. It also generated most of the first draft of the code, the SQL schema and this README, and helped me test the flows in a browser.
 - **What I did:** I chose the product and UX direction and the security model (RLS insert-only, admin allowlist, server-side validation). I reviewed and tested every flow, including invalid inputs, the admin filter and totals, and confirming that the anon key cannot read submissions. I'm ready to walk through any file.
 
 Trip content and prices are sample data for this demo.

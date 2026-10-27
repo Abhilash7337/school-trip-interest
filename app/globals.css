@@ -47,7 +47,6 @@
 @theme inline {
   --font-sans: var(--font-jakarta);
   --font-mono: var(--font-plex-mono);
-  --font-serif: var(--font-fraunces);
 }
 
 :root {

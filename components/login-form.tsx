@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { signIn } from "@/app/admin/actions";
 import { Field, inputClass } from "./field";
@@ -9,6 +10,7 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
 
   return (
     <form
@@ -23,8 +25,9 @@ export function LoginForm() {
             setError(result.error);
             return;
           }
-          // Full page load so the admin page is rendered with the new session cookie.
-          window.location.assign("/admin");
+          // The session cookie is set now; refresh so /admin renders with it.
+          router.replace("/admin");
+          router.refresh();
         });
       }}
     >
