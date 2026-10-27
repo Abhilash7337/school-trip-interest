@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { Trip } from "@/lib/trips";
-import { shortDuration } from "@/lib/trips";
+import { shortDuration, tripColor } from "@/lib/trips";
 import type { FieldErrors, InterestField, InterestValues } from "@/lib/validation";
 import { Field, inputClass } from "./field";
 
@@ -21,11 +21,12 @@ type Props = {
   onBack: () => void;
   onNext: () => void;
   onEdit: (step: Step) => void;
+  onShowDetails: (tripId: string) => void;
 };
 
-// Three-step "check-in": Destination → Group → Contact. Each step is checked in
+// Three-step check-in: Destination → Group → Contact. Each step is checked in
 // the browser before moving on; the Server Action re-checks everything.
-export function CheckInForm({ trips, step, values, errors, pending, formMessage, onChange, onBack, onNext, onEdit }: Props) {
+export function CheckInForm({ trips, step, values, errors, pending, formMessage, onChange, onBack, onNext, onEdit, onShowDetails }: Props) {
   const stepRef = useRef<HTMLDivElement>(null);
   const firstRender = useRef(true);
 
@@ -51,6 +52,8 @@ export function CheckInForm({ trips, step, values, errors, pending, formMessage,
     onChange("student_count", String(Math.min(500, Math.max(1, current + delta))));
   };
 
+  const linkButton = "font-bold text-primary underline-offset-2 hover:underline";
+
   return (
     <form
       noValidate
@@ -61,20 +64,22 @@ export function CheckInForm({ trips, step, values, errors, pending, formMessage,
       className="grid gap-6"
       aria-describedby={formMessage ? "form-message" : undefined}
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-2xl font-extrabold">Check in your interest</h2>
-        <ol className="flex gap-1.5 font-mono text-xs" aria-label="Progress">
+      <div className="grid gap-3">
+        <div>
+          <h2 className="text-xl font-extrabold">Register your interest</h2>
+          <p className="text-sm text-mute">Three quick steps. No payment needed.</p>
+        </div>
+        <ol className="grid grid-cols-3 gap-1.5 text-xs font-bold" aria-label="Progress">
           {STEP_LABELS.map((label, i) => {
             const n = (i + 1) as Step;
             const done = n < step;
             return (
-              <li
-                key={label}
-                aria-current={n === step ? "step" : undefined}
-                className={`rounded-full px-3 py-1.5 ${n === step ? "bg-navy text-white" : done ? "bg-signal text-navy" : "bg-sky text-mute"}`}
-              >
-                {done ? "✓ " : `${n}. `}
-                {label}
+              <li key={label} aria-current={n === step ? "step" : undefined} className="grid gap-1.5">
+                <span className={`h-1.5 rounded-full ${n <= step ? "bg-primary" : "bg-rule"}`} aria-hidden="true" />
+                <span className={n === step ? "text-ink" : done ? "text-primary" : "text-mute"}>
+                  {done ? "✓ " : `${n}. `}
+                  {label}
+                </span>
               </li>
             );
           })}
@@ -88,27 +93,36 @@ export function CheckInForm({ trips, step, values, errors, pending, formMessage,
       <div ref={stepRef} key={step} className="rise-in grid gap-5">
         {step === 1 && (
           <fieldset className="grid gap-2.5" aria-describedby={errors.trip_id ? "trip_id-error" : undefined}>
-            <legend className="mb-3 font-bold">Which trip is your school interested in?</legend>
+            <legend className="mb-3 font-semibold">Which trip is your school interested in?</legend>
             {trips.map((t) => (
-              <label
+              <div
                 key={t.id}
-                className="grid cursor-pointer grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-3 rounded-xl border-2 border-rule px-4 py-3 transition-colors hover:border-navy has-checked:border-navy has-checked:bg-[#f4f7fd] sm:grid-cols-[auto_auto_minmax(0,1fr)_auto]"
+                className="grid grid-cols-[minmax(0,1fr)_auto] items-center rounded-xl border border-rule-strong transition-colors hover:border-primary has-checked:border-primary has-checked:bg-primary-soft"
               >
-                <input
-                  type="radio"
-                  name="trip_id"
-                  value={t.id}
-                  checked={values.trip_id === t.id}
-                  onChange={(e) => onChange("trip_id", e.target.value)}
-                  data-invalid={Boolean(errors.trip_id)}
-                  className="size-[18px] accent-navy"
-                />
-                <b className="font-mono">{t.code}</b>
-                <span className="font-semibold">{t.title}</span>
-                <small className="hidden font-mono text-xs text-mute sm:block">
-                  {shortDuration(t.duration)} · {t.grades.replace("Grades ", "Gr ")}
-                </small>
-              </label>
+                <label className="grid cursor-pointer grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-3 py-3 pl-4">
+                  <input
+                    type="radio"
+                    name="trip_id"
+                    value={t.id}
+                    checked={values.trip_id === t.id}
+                    onChange={(e) => onChange("trip_id", e.target.value)}
+                    data-invalid={Boolean(errors.trip_id)}
+                    className="size-[18px] accent-primary"
+                  />
+                  <b className="font-mono text-sm" style={{ color: tripColor(t.code) }}>
+                    {t.code}
+                  </b>
+                  <span className="min-w-0">
+                    <span className="block truncate font-semibold">{t.title}</span>
+                    <span className="block text-xs text-mute">
+                      {shortDuration(t.duration)} · {t.grades} · {t.season}
+                    </span>
+                  </span>
+                </label>
+                <button type="button" onClick={() => onShowDetails(t.id)} className={`px-4 py-3 text-sm ${linkButton}`}>
+                  Details
+                </button>
+              </div>
             ))}
             {errors.trip_id && (
               <p id="trip_id-error" className="text-sm font-semibold text-alert">
@@ -128,11 +142,11 @@ export function CheckInForm({ trips, step, values, errors, pending, formMessage,
             <Field id="student_count" label="Number of students" error={errors.student_count} hint="An estimate is fine. Between 1 and 500.">
               {(aria) => (
                 <div className="grid grid-cols-[48px_minmax(0,1fr)_48px] gap-1.5">
-                  <button type="button" onClick={() => changeStudents(-1)} aria-label="One fewer student" className="rounded-[10px] border-2 border-rule text-xl font-extrabold hover:border-navy">
+                  <button type="button" onClick={() => changeStudents(-1)} aria-label="One fewer student" className="rounded-[10px] border border-rule-strong text-xl font-bold hover:border-primary hover:text-primary">
                     −
                   </button>
-                  <input {...aria} {...bind("student_count")} type="number" inputMode="numeric" min={1} max={500} step={1} placeholder="40" className={`${inputClass} text-center font-mono font-semibold`} />
-                  <button type="button" onClick={() => changeStudents(1)} aria-label="One more student" className="rounded-[10px] border-2 border-rule text-xl font-extrabold hover:border-navy">
+                  <input {...aria} {...bind("student_count")} type="number" inputMode="numeric" min={1} max={500} step={1} placeholder="40" className={`${inputClass} text-center font-semibold`} />
+                  <button type="button" onClick={() => changeStudents(1)} aria-label="One more student" className="rounded-[10px] border border-rule-strong text-xl font-bold hover:border-primary hover:text-primary">
                     +
                   </button>
                 </div>
@@ -150,20 +164,21 @@ export function CheckInForm({ trips, step, values, errors, pending, formMessage,
               <Field id="email" label="Email" error={errors.email}>
                 {(aria) => <input {...aria} {...bind("email")} type="email" autoComplete="email" placeholder="name@school.edu.in" className={inputClass} />}
               </Field>
-              <Field id="phone" label="Mobile number" error={errors.phone} hint="10-digit Indian mobile. We only call about this trip.">
+              <Field id="phone" label="Mobile number" error={errors.phone} hint="10-digit Indian mobile number.">
                 {(aria) => <input {...aria} {...bind("phone")} type="tel" inputMode="tel" autoComplete="tel" placeholder="98490 12345" className={inputClass} />}
               </Field>
             </div>
 
-            <div className="grid gap-1 rounded-xl bg-sky px-4 py-3 text-sm">
-              <span className="font-mono text-[0.68rem] uppercase tracking-[0.12em] text-mute">Your request</span>
+            <div className="grid gap-1 rounded-xl border border-dashed border-rule-strong bg-mist px-4 py-3 text-sm">
+              <span className="text-xs font-semibold text-mute">Your request</span>
               <p>
-                <b>{trip?.title}</b> · {values.student_count} students · {values.school_name}{" "}
-                <button type="button" onClick={() => onEdit(1)} className="font-bold underline decoration-signal decoration-2 underline-offset-2">
+                <b>{trip?.title}</b> · {values.student_count} students · {values.school_name}
+              </p>
+              <p className="flex gap-3 text-xs">
+                <button type="button" onClick={() => onEdit(1)} className={linkButton}>
                   Change trip
-                </button>{" "}
-                ·{" "}
-                <button type="button" onClick={() => onEdit(2)} className="font-bold underline decoration-signal decoration-2 underline-offset-2">
+                </button>
+                <button type="button" onClick={() => onEdit(2)} className={linkButton}>
                   Edit group
                 </button>
               </p>
@@ -186,14 +201,14 @@ export function CheckInForm({ trips, step, values, errors, pending, formMessage,
 
       <div className="flex flex-wrap items-center gap-3">
         {step > 1 && (
-          <button type="button" onClick={onBack} className="rounded-[10px] border-2 border-rule px-4 py-3 text-sm font-bold hover:border-navy">
+          <button type="button" onClick={onBack} className="rounded-[10px] border border-rule-strong px-4 py-3 text-sm font-bold hover:border-ink">
             ← Back
           </button>
         )}
         <button
           type="submit"
           disabled={pending}
-          className="ml-auto rounded-[10px] bg-signal px-6 py-3 text-base font-extrabold text-navy transition-colors hover:bg-[#ffd566] disabled:cursor-wait disabled:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy"
+          className="flex-1 rounded-[10px] bg-primary px-6 py-3 text-base font-bold text-white transition-colors hover:bg-primary-hover disabled:cursor-wait disabled:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           {step < 3 ? "Continue →" : pending ? "Registering…" : "Register interest"}
         </button>

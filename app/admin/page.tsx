@@ -85,14 +85,14 @@ async function Report({ searchParams }: { searchParams: PageProps<"/admin">["sea
         </div>
 
         {grandStudents > 0 && (
-          <div className="flex h-3.5 overflow-hidden border border-navy" role="img" aria-label="Share of students by trip">
+          <div className="flex h-3.5 overflow-hidden border border-ink" role="img" aria-label="Share of students by trip">
             {totals.map((t) => (
               <i key={t.trip_id} className="block h-full" style={{ width: `${percent(t.total_students)}%`, background: tripColor(t.code) }} />
             ))}
           </div>
         )}
 
-        <section aria-label="Total students per trip" className="grid border-t-2 border-navy sm:grid-cols-3">
+        <section aria-label="Total students per trip" className="grid border-t-2 border-ink sm:grid-cols-3">
           {totals.map((t, i) => (
             <div key={t.trip_id} className={`grid gap-1 py-5 sm:pr-5 ${i > 0 ? "border-t border-rule sm:border-l sm:border-t-0 sm:pl-5" : ""}`}>
               <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em]">
@@ -135,7 +135,7 @@ async function Report({ searchParams }: { searchParams: PageProps<"/admin">["sea
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm tabular-nums">
                 <thead>
-                  <tr className="border-b-[1.5px] border-navy text-left text-[0.68rem] uppercase tracking-[0.12em] text-mute">
+                  <tr className="border-b-[1.5px] border-ink text-left text-[0.68rem] uppercase tracking-[0.12em] text-mute">
                     {["Received", "Reference", "Teacher", "School", "Email", "Phone", "Trip"].map((h) => (
                       <th key={h} className="whitespace-nowrap py-3 pr-5 font-semibold">
                         {h}
@@ -148,7 +148,7 @@ async function Report({ searchParams }: { searchParams: PageProps<"/admin">["sea
                   {rows.map((r) => {
                     const trip = tripById.get(r.trip_id);
                     return (
-                      <tr key={r.id} className="border-b border-rule hover:bg-sky/60">
+                      <tr key={r.id} className="border-b border-rule hover:bg-mist">
                         <td className="whitespace-nowrap py-3 pr-5">{formatDate(r.created_at)}</td>
                         <td className="whitespace-nowrap py-3 pr-5 font-mono text-xs">{trip ? toReference(trip.code, r.id) : "—"}</td>
                         <td className="whitespace-nowrap py-3 pr-5 font-semibold">{r.teacher_name}</td>
@@ -174,19 +174,19 @@ async function Report({ searchParams }: { searchParams: PageProps<"/admin">["sea
 
 function AdminHeader({ email }: { email: string }) {
   return (
-    <header className="border-b border-navy">
+    <header className="border-b border-ink">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-7">
         <Link href="/admin" className="flex items-center gap-2 font-extrabold">
-          <PlaneIcon className="size-5 rotate-90 text-navy" />
+          <PlaneIcon className="size-5 rotate-90 text-ink" />
           School Trips <span className="font-serif text-sm font-normal italic text-mute">admin</span>
         </Link>
         <div className="flex items-center gap-1 text-sm">
           <span className="mr-2 hidden text-mute md:inline">{email}</span>
-          <Link href="/" className="rounded-lg px-3 py-2 font-semibold hover:bg-sky">
+          <Link href="/" className="rounded-lg px-3 py-2 font-semibold hover:bg-mist">
             Public site
           </Link>
           <form action={signOut}>
-            <button type="submit" className="rounded-lg border border-navy px-3 py-2 font-semibold hover:bg-navy hover:text-white">
+            <button type="submit" className="rounded-lg border border-ink px-3 py-2 font-semibold hover:bg-ink hover:text-white">
               Log out
             </button>
           </form>
@@ -201,7 +201,7 @@ function FilterLink({ href, active, label, count }: { href: string; active: bool
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`-mb-px border-b-2 py-2.5 text-sm font-bold ${active ? "border-signal text-navy" : "border-transparent text-mute hover:text-navy"}`}
+      className={`-mb-px border-b-2 py-2.5 text-sm font-bold ${active ? "border-amber text-ink" : "border-transparent text-mute hover:text-ink"}`}
     >
       {label} <span className="font-mono text-xs font-normal">({count})</span>
     </Link>
@@ -215,7 +215,7 @@ function NoAccess({ email }: { email: string }) {
         <h1 className="font-serif text-3xl">No admin access</h1>
         <p className="mt-3 text-mute">{email} is signed in but isn&apos;t on the admin list. Ask the team to add you, or sign in with a different account.</p>
         <form action={signOut} className="mt-6">
-          <button type="submit" className="rounded-lg bg-navy px-4 py-2.5 font-bold text-white">
+          <button type="submit" className="rounded-lg bg-ink px-4 py-2.5 font-bold text-white">
             Sign out
           </button>
         </form>
@@ -227,9 +227,9 @@ function NoAccess({ email }: { email: string }) {
 function ReportSkeleton() {
   return (
     <div className="mx-auto grid max-w-6xl animate-pulse gap-6 px-4 pt-24 sm:px-7" aria-label="Loading report">
-      <div className="h-12 w-3/4 rounded bg-sky" />
-      <div className="h-24 rounded bg-sky" />
-      <div className="h-64 rounded bg-sky" />
+      <div className="h-12 w-3/4 rounded bg-mist" />
+      <div className="h-24 rounded bg-mist" />
+      <div className="h-64 rounded bg-mist" />
     </div>
   );
 }

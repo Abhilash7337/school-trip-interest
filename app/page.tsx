@@ -1,43 +1,33 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { DeparturesBoard } from "@/components/departures-board";
-import { PlaneIcon } from "@/components/icons";
 import { TripPlanner } from "@/components/trip-planner";
 import { getTrips } from "@/lib/data";
 
 export default function Home() {
   return (
     <>
-      <header className="bg-navy pb-9 pt-5 text-white">
-        <div className="mx-auto max-w-6xl px-4 sm:px-7">
-          <div className="flex items-center justify-between gap-3">
-            <span className="flex items-center gap-2 font-extrabold tracking-wide">
-              <PlaneIcon className="size-5 rotate-90 text-signal" /> School Trips
-            </span>
-            <Link
-              href="/admin"
-              className="rounded-lg border border-white/25 px-3 py-1.5 font-mono text-xs hover:border-signal hover:text-signal"
-            >
-              Admin
-            </Link>
-          </div>
-
-          <h1 className="mb-3 mt-7 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-5xl font-extrabold leading-none tracking-tight sm:text-6xl">
-            Departures
-            <span className="font-mono text-sm font-medium uppercase tracking-[0.08em] text-signal">2027 school season · from Hyderabad</span>
-          </h1>
-          <p className="mb-6 max-w-2xl text-[#c7d2ee]">
-            Educational trips for school groups. Pick a destination, check the itinerary, and register your school&apos;s interest in about a minute. No payment needed.
-          </p>
-
-          <Suspense fallback={<BoardSkeleton />}>
-            <Board />
-          </Suspense>
+      <header className="sticky top-0 z-20 border-b border-rule bg-paper/90 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-6xl items-center gap-5 px-4 sm:px-7">
+          <Link href="/" className="flex items-center gap-2.5 font-extrabold">
+            <span className="grid size-8 place-items-center rounded-[9px] bg-primary text-xs font-extrabold text-white">ST</span>
+            School Trips
+          </Link>
+          <nav aria-label="Sections" className="hidden gap-1 text-sm font-semibold text-mute sm:flex">
+            <a href="#trips" className="rounded-lg px-2.5 py-2 hover:bg-mist hover:text-ink">
+              Trips
+            </a>
+            <a href="#register" className="rounded-lg px-2.5 py-2 hover:bg-mist hover:text-ink">
+              Register
+            </a>
+          </nav>
+          <Link href="/admin" className="ml-auto rounded-[10px] border border-rule px-3.5 py-2 text-sm font-bold hover:border-primary">
+            Admin
+          </Link>
         </div>
       </header>
 
       <main className="flex-1">
-        <Suspense fallback={<PassesSkeleton />}>
+        <Suspense fallback={<PlannerSkeleton />}>
           <Planner />
         </Suspense>
       </main>
@@ -49,17 +39,12 @@ export default function Home() {
   );
 }
 
-async function Board() {
-  const trips = await getTrips();
-  return trips?.length ? <DeparturesBoard trips={trips} /> : null;
-}
-
 async function Planner() {
   const trips = await getTrips();
   if (!trips?.length) {
     return (
-      <div role="alert" className="mx-auto my-16 max-w-xl rounded-2xl bg-paper p-6 text-center">
-        <h2 className="text-xl font-bold">Trips are unavailable right now</h2>
+      <div role="alert" className="mx-auto my-20 max-w-xl rounded-2xl border border-rule bg-paper p-7 text-center">
+        <h1 className="text-xl font-bold">Trips are unavailable right now</h1>
         <p className="mt-2 text-mute">We couldn&apos;t load the trip list. Please refresh the page in a minute.</p>
       </div>
     );
@@ -67,16 +52,15 @@ async function Planner() {
   return <TripPlanner trips={trips} />;
 }
 
-function BoardSkeleton() {
-  return <div className="h-[148px] animate-pulse rounded-xl bg-board" aria-hidden="true" />;
-}
-
-function PassesSkeleton() {
+function PlannerSkeleton() {
   return (
-    <div className="mx-auto grid max-w-6xl gap-5 px-4 pt-20 sm:px-7 lg:grid-cols-3" aria-label="Loading trips">
-      {[0, 1, 2].map((i) => (
-        <div key={i} className="h-80 animate-pulse rounded-2xl bg-paper/70" />
-      ))}
+    <div className="mx-auto grid max-w-6xl animate-pulse gap-10 px-4 py-14 sm:px-7 lg:grid-cols-2" aria-label="Loading trips">
+      <div className="grid gap-4">
+        <div className="h-7 w-56 rounded-full bg-rule" />
+        <div className="h-28 rounded-xl bg-rule" />
+        <div className="h-16 rounded-xl bg-rule" />
+      </div>
+      <div className="h-96 rounded-2xl bg-paper" />
     </div>
   );
 }

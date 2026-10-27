@@ -1,23 +1,25 @@
 @import "tailwindcss";
 
-/* Departures look: airline navy, signal yellow, sky-blue ground. One deliberate
-   light theme, so every colour is set explicitly. */
+/* Campus look: calm ink and teal on a cool mist ground, amber for highlights.
+   One deliberate light theme, so every colour is set explicitly. */
 @theme {
-  --color-navy: #0e1b3d;
-  --color-navy-2: #16264f;
-  --color-board: #0a1430;
-  --color-signal: #ffc93c;
-  --color-signal-soft: #fff6dc;
-  --color-sky: #e7edf8;
+  --color-ink: #0f1b2a;
+  --color-ink-2: #1d2b3d;
+  --color-primary: #0e7c74;
+  --color-primary-hover: #0b6a63;
+  --color-primary-soft: #e3f3f1;
+  --color-amber: #e8a317;
+  --color-amber-soft: #fdf3dc;
+  --color-mist: #f5f7f9;
   --color-paper: #ffffff;
-  --color-mute: #5b6785;
-  --color-rule: #c9d3e6;
-  --color-alert: #c8362f;
-  --color-board-mute: #8c9bc2;
+  --color-mute: #5a6878;
+  --color-rule: #e1e6ec;
+  --color-rule-strong: #c9d3de;
+  --color-alert: #c2362f;
 }
 
 @theme inline {
-  --font-sans: var(--font-archivo);
+  --font-sans: var(--font-jakarta);
   --font-mono: var(--font-plex-mono);
   --font-serif: var(--font-fraunces);
 }
@@ -27,24 +29,9 @@
 }
 
 body {
-  background: var(--color-sky);
-  color: var(--color-navy);
-  font-family: var(--font-archivo), system-ui, sans-serif;
-}
-
-/* Split-flap letters on the departures board flip in once on load. */
-@keyframes flap-in {
-  from {
-    transform: rotateX(90deg);
-    opacity: 0.2;
-  }
-  to {
-    transform: none;
-    opacity: 1;
-  }
-}
-.flap-in {
-  animation: flap-in 0.55s cubic-bezier(0.3, 1.4, 0.6, 1) both;
+  background: var(--color-mist);
+  color: var(--color-ink);
+  font-family: var(--font-jakarta), system-ui, sans-serif;
 }
 
 @keyframes rise-in {
@@ -58,8 +45,30 @@ body {
 }
 
 dialog::backdrop {
-  background: rgb(10 20 48 / 0.6);
+  background: rgb(15 27 42 / 0.55);
   backdrop-filter: blur(3px);
+}
+
+/* Boarding-pass stub: dashed tear line with two punched notches. */
+.pass-stub {
+  position: relative;
+  border-left: 2px dashed var(--color-rule-strong);
+}
+.pass-stub::before,
+.pass-stub::after {
+  content: "";
+  position: absolute;
+  left: -12px;
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  background: var(--color-mist);
+}
+.pass-stub::before {
+  top: -12px;
+}
+.pass-stub::after {
+  bottom: -12px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -71,26 +80,4 @@ dialog::backdrop {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
-}
-
-/* Boarding-pass stub: dashed tear line with two punched notches. */
-.pass-stub {
-  position: relative;
-  border-left: 2px dashed var(--color-rule);
-}
-.pass-stub::before,
-.pass-stub::after {
-  content: "";
-  position: absolute;
-  left: -12px;
-  width: 22px;
-  height: 22px;
-  border-radius: 9999px;
-  background: var(--color-sky);
-}
-.pass-stub::before {
-  top: -11px;
-}
-.pass-stub::after {
-  bottom: -11px;
 }

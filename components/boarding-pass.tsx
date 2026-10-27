@@ -1,4 +1,4 @@
-import { formatInr, shortDuration, type Trip } from "@/lib/trips";
+import { formatInr, shortDuration, tripColor, type Trip } from "@/lib/trips";
 import { PinIcon, PlaneIcon } from "./icons";
 
 type Props = {
@@ -15,41 +15,44 @@ const PREVIEW_PLACES = 3;
 export function BoardingPass({ trip, selected, onSelect, onShowDetails }: Props) {
   const city = trip.destination.split(",")[0];
   const morePlaces = trip.places.length - PREVIEW_PLACES;
+  const color = tripColor(trip.code);
 
   return (
     <article
       aria-label={trip.title}
-      className={`grid snap-start grid-cols-[minmax(0,1fr)_104px] rounded-2xl bg-paper drop-shadow-[0_8px_16px_rgba(14,27,61,0.12)] transition-transform duration-200 hover:-translate-y-1 ${
-        selected ? "outline-3 outline-offset-2 outline-signal" : ""
+      className={`grid snap-start grid-cols-[minmax(0,1fr)_112px] rounded-2xl border bg-paper transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-[0_16px_30px_-20px_rgba(15,27,42,0.35)] ${
+        selected ? "border-primary ring-2 ring-primary" : "border-rule"
       }`}
     >
-      <div className="grid min-w-0 content-start gap-3 p-4 sm:p-5">
+      <div className="grid min-w-0 content-start gap-3.5 p-4 sm:p-5">
         <div className="flex items-center justify-between gap-2">
           <div>
             <small className="block font-mono text-[0.62rem] uppercase tracking-[0.12em] text-mute">From</small>
-            <b className="text-3xl font-extrabold leading-none tracking-tight">HYD</b>
+            <b className="text-[1.7rem] font-extrabold leading-none tracking-tight">HYD</b>
             <span className="block text-xs text-mute">Hyderabad</span>
           </div>
-          <div className="relative h-0.5 flex-1 bg-[repeating-linear-gradient(90deg,var(--color-rule)_0_6px,transparent_6px_11px)]">
-            <PlaneIcon className="absolute left-1/2 top-1/2 size-5 -translate-x-1/2 -translate-y-1/2 rotate-90 bg-paper px-0.5 text-navy" />
+          <div className="relative h-0.5 flex-1 bg-[repeating-linear-gradient(90deg,var(--color-rule-strong)_0_6px,transparent_6px_11px)]">
+            <PlaneIcon className="absolute left-1/2 top-1/2 size-5 -translate-x-1/2 -translate-y-1/2 rotate-90 bg-paper px-0.5" />
           </div>
           <div className="text-right">
             <small className="block font-mono text-[0.62rem] uppercase tracking-[0.12em] text-mute">To</small>
-            <b className="text-3xl font-extrabold leading-none tracking-tight">{trip.code}</b>
+            <b className="text-[1.7rem] font-extrabold leading-none tracking-tight" style={{ color }}>
+              {trip.code}
+            </b>
             <span className="block text-xs text-mute">{city}</span>
           </div>
         </div>
 
         <h3 className="text-lg font-bold leading-snug">{trip.title}</h3>
 
-        <dl className="grid grid-cols-3 gap-2">
+        <dl className="grid grid-cols-3 gap-2 rounded-xl bg-mist px-3 py-2.5">
           {[
             ["Duration", shortDuration(trip.duration)],
-            ["Class", trip.grades.replace("Grades ", "Gr ")],
+            ["Grades", trip.grades.replace("Grades ", "")],
             ["Departs", trip.season.replace("December", "Dec")],
           ].map(([label, value]) => (
             <div key={label}>
-              <dt className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-mute">{label}</dt>
+              <dt className="text-[0.68rem] font-semibold text-mute">{label}</dt>
               <dd className="text-sm font-bold">{value}</dd>
             </div>
           ))}
@@ -59,36 +62,36 @@ export function BoardingPass({ trip, selected, onSelect, onShowDetails }: Props)
 
         <ul className="flex flex-wrap gap-1.5" aria-label="Places covered">
           {trip.places.slice(0, PREVIEW_PLACES).map((place) => (
-            <li key={place} className="flex items-center gap-1 rounded-full bg-sky px-2.5 py-1 text-xs font-semibold">
+            <li key={place} className="flex items-center gap-1 rounded-full border border-rule px-2.5 py-1 text-xs font-semibold">
               <PinIcon className="size-3.5 text-mute" />
               {place}
             </li>
           ))}
-          {morePlaces > 0 && <li className="rounded-full px-1 py-1 text-xs font-semibold text-mute">+{morePlaces} more</li>}
+          {morePlaces > 0 && <li className="px-1 py-1 text-xs font-semibold text-mute">+{morePlaces} more</li>}
         </ul>
 
         <button
           type="button"
           onClick={onShowDetails}
-          className="justify-self-start rounded-lg py-1 text-sm font-bold text-navy underline decoration-signal decoration-2 underline-offset-4 hover:decoration-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy"
+          className="justify-self-start rounded-md text-sm font-bold text-primary hover:text-primary-hover hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           View itinerary &amp; places →
         </button>
       </div>
 
-      <div className="pass-stub grid content-center justify-items-center gap-1.5 px-2 py-4 text-center">
-        <small className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-mute">From</small>
+      <div className="pass-stub grid content-center justify-items-center gap-1 px-2 py-4 text-center">
+        <small className="text-[0.68rem] font-semibold text-mute">From</small>
         <b className="text-base leading-tight">{formatInr(trip.price_from_inr)}</b>
         <small className="text-[0.65rem] text-mute">per student</small>
         <button
           type="button"
           onClick={onSelect}
           aria-pressed={selected}
-          className={`mt-1 rounded-lg px-3 py-2 text-sm font-extrabold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy ${
-            selected ? "bg-signal text-navy" : "bg-navy text-white hover:bg-[#1b2e63]"
+          className={`mt-2 rounded-[10px] px-3.5 py-2 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+            selected ? "bg-primary text-white" : "border border-rule-strong bg-paper hover:border-primary hover:text-primary"
           }`}
         >
-          {selected ? "Selected" : "Select"}
+          {selected ? "Selected ✓" : "Select"}
         </button>
       </div>
     </article>

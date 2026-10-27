@@ -13,7 +13,7 @@ export function Field({ id, label, error, hint, children }: Props) {
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
   return (
     <div className="grid min-w-0 content-start gap-1.5">
-      <label htmlFor={id} className="font-mono text-[0.7rem] uppercase tracking-[0.1em] text-mute">
+      <label htmlFor={id} className="text-sm font-semibold">
         {label}
       </label>
       {children({ id, "aria-invalid": Boolean(error), "aria-describedby": describedBy })}
@@ -31,4 +31,4 @@ export function Field({ id, label, error, hint, children }: Props) {
 }
 
 export const inputClass =
-  "w-full rounded-[10px] border-2 border-rule bg-paper px-3 py-2.5 text-base text-navy placeholder:text-[#9aa6c2] focus:border-navy focus:outline-none aria-invalid:border-alert";
+  "w-full rounded-[10px] border border-rule-strong bg-paper px-3 py-2.5 text-base text-ink placeholder:text-[#9aa5b4] transition-shadow focus:border-primary focus:outline-none focus:ring-3 focus:ring-primary/20 aria-invalid:border-alert";

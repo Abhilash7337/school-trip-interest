@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { formatInr, type Trip } from "@/lib/trips";
+import { formatInr, tripColor, type Trip } from "@/lib/trips";
 import { CheckIcon, CloseIcon, PinIcon, PlaneIcon } from "./icons";
 
 type Props = {
@@ -23,35 +23,40 @@ export function TripDetailsDialog({ trip, selected, onClose, onSelect }: Props) 
     if (!trip && dialog.open) dialog.close();
   }, [trip]);
 
+  const color = trip ? tripColor(trip.code) : undefined;
+
   return (
     <dialog
       ref={ref}
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
       aria-labelledby="trip-dialog-title"
-      className="m-auto w-[min(720px,calc(100vw-24px))] max-h-[calc(100dvh-24px)] overflow-hidden rounded-2xl bg-paper p-0 text-navy shadow-2xl"
+      className="m-auto w-[min(720px,calc(100vw-24px))] max-h-[calc(100dvh-24px)] overflow-hidden rounded-2xl bg-paper p-0 text-ink shadow-2xl"
     >
       {trip && (
         <div className="flex max-h-[calc(100dvh-24px)] flex-col">
-          <header className="relative bg-navy px-5 pb-5 pt-4 text-white sm:px-7">
+          <header
+            className="relative px-5 pb-5 pt-4 text-white sm:px-7"
+            style={{ background: `linear-gradient(135deg, ${color}, color-mix(in srgb, ${color} 55%, #000))` }}
+          >
             <button
               type="button"
               onClick={onClose}
               aria-label="Close trip details"
-              className="absolute right-3 top-3 rounded-lg p-2 text-white/80 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-signal"
+              className="absolute right-3 top-3 rounded-lg p-2 text-white/80 hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-white"
             >
               <CloseIcon />
             </button>
-            <p className="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-signal">
+            <span className="inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-bold">
               {trip.season} · {trip.duration}
-            </p>
-            <div className="mt-2 flex items-center gap-3 text-4xl font-extrabold tracking-tight">
-              HYD <PlaneIcon className="size-6 rotate-90 text-signal" /> {trip.code}
+            </span>
+            <div className="mt-3 flex items-center gap-3 text-3xl font-extrabold tracking-tight">
+              HYD <PlaneIcon className="size-6 rotate-90" /> {trip.code}
             </div>
-            <h2 id="trip-dialog-title" className="mt-2 text-2xl font-bold">
+            <h2 id="trip-dialog-title" className="mt-1.5 text-2xl font-bold">
               {trip.title}
             </h2>
-            <p className="mt-1 text-sm text-[#c7d2ee]">
+            <p className="mt-1 text-sm text-white/85">
               {trip.destination} · {trip.grades}
             </p>
           </header>
@@ -60,12 +65,12 @@ export function TripDetailsDialog({ trip, selected, onClose, onSelect }: Props) 
             <p className="text-[0.95rem] leading-relaxed text-mute">{trip.summary}</p>
 
             <section aria-labelledby="places-h">
-              <h3 id="places-h" className="mb-2 font-mono text-xs uppercase tracking-[0.12em] text-mute">
-                Places covered ({trip.places.length})
+              <h3 id="places-h" className="mb-2.5 text-sm font-bold">
+                Places covered <span className="font-normal text-mute">({trip.places.length})</span>
               </h3>
               <ul className="flex flex-wrap gap-2">
                 {trip.places.map((place) => (
-                  <li key={place} className="flex items-center gap-1.5 rounded-full bg-sky px-3 py-1.5 text-sm font-semibold">
+                  <li key={place} className="flex items-center gap-1.5 rounded-full border border-rule bg-mist px-3 py-1.5 text-sm font-semibold">
                     <PinIcon className="size-3.5 text-mute" />
                     {place}
                   </li>
@@ -74,16 +79,14 @@ export function TripDetailsDialog({ trip, selected, onClose, onSelect }: Props) 
             </section>
 
             <section aria-labelledby="itinerary-h">
-              <h3 id="itinerary-h" className="mb-3 font-mono text-xs uppercase tracking-[0.12em] text-mute">
+              <h3 id="itinerary-h" className="mb-3 text-sm font-bold">
                 Day by day
               </h3>
-              <ol className="grid gap-0">
+              <ol className="grid">
                 {trip.itinerary.map((day, i) => (
-                  <li key={day.day} className="grid grid-cols-[52px_minmax(0,1fr)] gap-3">
+                  <li key={day.day} className="grid grid-cols-[48px_minmax(0,1fr)] gap-3">
                     <div className="flex flex-col items-center">
-                      <span className="grid size-10 place-items-center rounded-full bg-navy font-mono text-xs font-semibold text-signal">
-                        D{day.day}
-                      </span>
+                      <span className="grid size-9 place-items-center rounded-full bg-primary-soft text-xs font-bold text-primary">D{day.day}</span>
                       {i < trip.itinerary.length - 1 && <span className="w-0.5 flex-1 bg-rule" aria-hidden="true" />}
                     </div>
                     <div className="pb-5 pt-1.5">
@@ -96,13 +99,13 @@ export function TripDetailsDialog({ trip, selected, onClose, onSelect }: Props) 
             </section>
 
             <section aria-labelledby="included-h">
-              <h3 id="included-h" className="mb-2 font-mono text-xs uppercase tracking-[0.12em] text-mute">
+              <h3 id="included-h" className="mb-2.5 text-sm font-bold">
                 What&apos;s included
               </h3>
               <ul className="grid gap-1.5 sm:grid-cols-2">
                 {trip.inclusions.map((item) => (
                   <li key={item} className="flex items-start gap-2 text-sm">
-                    <CheckIcon className="mt-0.5 size-4 shrink-0 text-[#12a594]" />
+                    <CheckIcon className="mt-0.5 size-4 shrink-0 text-primary" />
                     {item}
                   </li>
                 ))}
@@ -110,7 +113,7 @@ export function TripDetailsDialog({ trip, selected, onClose, onSelect }: Props) 
             </section>
           </div>
 
-          <footer className="flex flex-wrap items-center justify-between gap-3 border-t-2 border-dashed border-rule px-5 py-4 sm:px-7">
+          <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-rule px-5 py-4 sm:px-7">
             <div>
               <small className="block text-xs text-mute">From, per student (indicative)</small>
               <b className="text-xl">{formatInr(trip.price_from_inr)}</b>
@@ -119,14 +122,14 @@ export function TripDetailsDialog({ trip, selected, onClose, onSelect }: Props) 
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-lg border-2 border-rule px-4 py-2.5 text-sm font-bold hover:border-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy"
+                className="rounded-[10px] border border-rule px-4 py-2.5 text-sm font-bold hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 Close
               </button>
               <button
                 type="button"
                 onClick={() => onSelect(trip.id)}
-                className="rounded-lg bg-signal px-4 py-2.5 text-sm font-extrabold text-navy hover:bg-[#ffd566] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy"
+                className="rounded-[10px] bg-primary px-4 py-2.5 text-sm font-bold text-white hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 {selected ? "Continue with this trip" : "Select this trip"}
               </button>
